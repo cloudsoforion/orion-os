@@ -1,0 +1,3 @@
+# Floor is the verified-working installed version (pip show mcp -> 1.27.2, 2026-08-07),
+# not a guess. mcp_server.py imports mcp.server.fastmcp.
+mcp>=1.27.2

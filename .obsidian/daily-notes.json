@@ -1,0 +1,5 @@
+{
+  "folder": "Log/daily",
+  "format": "YYYYMMDD-[daily]",
+  "template": "templates/wtf-am-i-doing-YYYYMMDD.md"
+}

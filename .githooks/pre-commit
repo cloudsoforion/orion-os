@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Auto-adds oversized staged files to .gitignore and unstages them before commit.
+#
+# Default threshold: 10MB. Override per-repo with:
+#   git config hooks.largeFileThreshold <bytes>
+
+set -uo pipefail
+
+THRESHOLD=$(git config --type=int hooks.largeFileThreshold 2>/dev/null || echo 10485760)
+REPO_ROOT=$(git rev-parse --show-toplevel)
+GITIGNORE="$REPO_ROOT/.gitignore"
+
+large_files=()
+
+while IFS= read -r -d '' file; do
+    size=$(git cat-file -s ":$file" 2>/dev/null) || continue
+    if (( size > THRESHOLD )); then
+        large_files+=("$file")
+    fi
+done < <(git diff --cached --name-only -z --diff-filter=ACM)
+
+if (( ${#large_files[@]} > 0 )); then
+    threshold_mb=$(( THRESHOLD / 1048576 ))
+    echo "[large-file-guard] Staged files over ${threshold_mb}MB — adding to .gitignore and unstaging:"
+
+    for file in "${large_files[@]}"; do
+        raw_size=$(git cat-file -s ":$file")
+        if (( raw_size >= 1048576 )); then
+            size_label="$(( raw_size / 1048576 ))MB"
+        else
+            size_label="$(( raw_size / 1024 ))KB"
+        fi
+        echo "  - $file ($size_label)"
+
+        # Add anchored path to .gitignore if not already present
+        if ! grep -qxF "/$file" "$GITIGNORE" 2>/dev/null; then
+            printf '\n# large-file-guard\n/%s\n' "$file" >> "$GITIGNORE"
+            git add -- "$GITIGNORE"
+            echo "    added to .gitignore"
+        fi
+
+        git restore --staged -- "$file"
+    done
+    echo ""
+fi
+
+# Chain to per-repo hook if present
+LOCAL_HOOK="$(git rev-parse --git-dir)/hooks/pre-commit.local"
+if [[ -x "$LOCAL_HOOK" ]]; then
+    exec "$LOCAL_HOOK" "$@"
+fi
+
+exit 0

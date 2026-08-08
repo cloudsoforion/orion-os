@@ -1,0 +1,3 @@
+# Only if the tool imports outside the stdlib. Delete this file otherwise.
+# Pin floors to VERIFIED installed versions (pip show <pkg>), never guesses.
+# PyYAML>=6.0

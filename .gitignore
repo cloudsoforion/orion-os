@@ -1,0 +1,26 @@
+# Obsidian
+.trash/
+.obsidian/workspace.json
+.obsidian/plugins/
+
+# Generated indexes — derived data, fully reproducible from the notes
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Anything that looks like a credential should never be committed
+*secret*
+*credential*
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+.idea/
+
+# Keep the shared Claude Code settings, ignore the per-machine ones
+!.claude/settings.json
+.claude/settings.local.json

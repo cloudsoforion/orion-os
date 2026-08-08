@@ -1,0 +1,38 @@
+{
+  "pillars": {
+    "inbox": "00-Inbox",
+    "areas": "01-Areas",
+    "projects": "02-Projects",
+    "resources": "03-Resources",
+    "archive": "04-Archive"
+  },
+  "log_dir": "Log",
+  "changelog_dir": "CHANGELOG",
+  "templates_dir": "templates",
+  "tag_prefixes": {
+    "created": "created/",
+    "updated": "updated/",
+    "archived": "archived/",
+    "type": "type/",
+    "domain": "domain/",
+    "status": "status/"
+  },
+  "default_domain": "knowledge-management",
+  "author": "",
+  "link_remaps": {},
+  "exclude_paths": [
+    "templates/*-README.md"
+  ],
+  "skip_hidden_dirs": true,
+  "skip_dirs": [
+    ".git",
+    ".obsidian",
+    ".trash",
+    ".idea",
+    ".claude",
+    ".venv",
+    ".pytest_cache",
+    "node_modules",
+    "__pycache__"
+  ]
+}
