@@ -24,3 +24,6 @@ __pycache__/
 # Keep the shared Claude Code settings, ignore the per-machine ones
 !.claude/settings.json
 .claude/settings.local.json
+
+# second-brain chunked vector matrix (generated; rebuild with embed_chunks.py)
+*.npy

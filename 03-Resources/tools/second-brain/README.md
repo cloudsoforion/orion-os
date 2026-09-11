@@ -21,11 +21,16 @@ This layer adds embeddings, vector search, and two integration modes.
 
 ## Architecture (layered)
 
-### Layer 1 — SQLite + in-memory similarity (local, zero new services)
-- Embeddings stored in `vault-index.db` alongside metadata
-- At query time: load embeddings into memory, cosine similarity in Python
-- Requires only Ollama (`nomic-embed-text`) — no new infrastructure
+### Layer 1 — SQLite + a numpy vector matrix (local, zero new services) ✅ **the only layer that exists**
+- Chunk metadata in `vault-index.db`; vectors in a float32 `vault-vectors.npy` sidecar
+- At query time: memory-map the matrix, one matmul, top-k. Vectors are L2-normalised at write
+  time so similarity is a dot product
+- Requires only Ollama (`nomic-embed-text`) and numpy — no new infrastructure
 - Good for: daily use, laptops, offline
+
+> Layers 2 and 3 below are **design intent, not shipped code.** Nothing in this repo talks to
+> Postgres or Kubernetes today. See [[docs/deploying-second-brain]] for what each would actually
+> take, and why Layer 1 covers more ground than it looks like it should.
 
 ### Layer 2 — Local pgvector (Docker)
 - `docker run -p 5432:5432 pgvector/pgvector:pg16`
@@ -155,12 +160,16 @@ when vault context is relevant, rather than injecting it on every prompt.
 
 | File | Purpose |
 |---|---|
-| `embed.py` | Generates embeddings via Ollama, stores in `vault-index.db`; prunes stale-path embeddings on every run |
-| `search.py` | CLI semantic search — returns wikilinks |
+| `chunker.py` | **Pure** heading-aware markdown chunking — text in, chunks out. No I/O; fully unit-tested. |
+| `embed_chunks.py` | **Builds the body-text index**: chunks every file, embeds each chunk, writes the `chunks` table + `vault-vectors.npy`. `--dry-run` writes nothing. |
+| `embed.py` | *Legacy* title-only store (`path \| title \| headings \| tags`). Kept for rollback; superseded by `embed_chunks.py`. |
+| `search.py` | CLI semantic search — returns wikilinks **plus the matching passage** |
 | `common.py` | Shared primitives: Ollama endpoint, model, DB location, similarity, scoring, formatting. Not an entry point. |
 | `register.py` | Writes the hook + MCP registrations with resolved absolute paths. Dry-run by default. |
 | `hook.py` | Mode 1: automatic context injection via `UserPromptSubmit` hook |
 | `mcp_server.py` | Mode 2: on-demand vault search via MCP |
+| `benchmark.py` | Measures retrieval quality against probe queries; `--save` / `--compare` for before-and-after |
+| `probes.example.json` | Probe template — copy to `probes.json` and write signal queries for your vault |
 | `tests/` | `pytest` suite (`python3 -m pytest tests/`) |
 | `README.md` | This file |
 | `CHANGELOG.md` | Version history |
@@ -210,16 +219,50 @@ then approve `vault-search` when prompted.
 ## New machine / first run
 
 1. `ollama pull nomic-embed-text`
-2. `python vault_indexer.py index`
-3. `python embed.py`
-4. Restart Claude Code — hook and MCP server load automatically from the config files
+2. `pip install -r requirements.txt`
+3. `python3 vault_indexer.py index` — populates the `files` table
+4. `python3 embed_chunks.py --dry-run` — sanity-check the chunk counts
+5. `python3 embed_chunks.py` — build the index
+6. Restart Claude Code — hook and MCP server load automatically from the config files
 
-Embeddings live in `vault-index.db` (gitignored). First `embed.py` run takes
-~10 minutes for a 4000-file vault; subsequent runs are incremental.
+Both artifacts are generated and should be gitignored: `vault-index.db` and
+`vault-vectors.npy`. Expect roughly **8 chunks per file** and a few minutes of embedding
+for a mid-sized vault; the matrix is ~3 KB per chunk.
 
 ---
 
 ## Maintenance
+
+### Rebuilding the body-text index
+
+```bash
+python3 embed_chunks.py --dry-run    # chunk counts per pillar; embeds nothing, writes nothing
+python3 embed_chunks.py              # full rebuild
+python3 embed_chunks.py --stats      # chunks stored, files covered, matrix shape
+```
+
+⚠️ **The index is only as fresh as its last build, and there is no incremental mode yet.**
+`vault_indexer.py index` populates `files`; `embed_chunks.py` chunks them. Neither runs
+automatically, so a note written today is invisible until both have run again — and the
+notes you most want to find are usually the ones you just wrote. Wire both into a cron job
+or a shell alias.
+
+### Why chunked
+
+The original store embedded `path | title | headings | tags` and never the body, which made
+it a table of contents rather than a search index. Two consequences, both reproducible on
+any vault:
+
+- **Everything looks equally similar to everything.** Ops notes share a structural
+  vocabulary — Findings, Impact, Decision — so unrelated documents cluster in a narrow band
+  and nonsense input can score above the retrieval floor.
+- **You can only find what you could already name.** A note's *title* may say nothing about
+  the thing you remember from its body, so the search cannot reach it.
+
+Chunked body text fixes both: real questions rank well above noise, and results return the
+passage rather than a filename.
+
+### Legacy title-only store
 
 Embeddings are keyed by **path**. Any bulk move or folder rename leaves the old
 embeddings pointing at paths that no longer exist — `search_vault` inner-joins to
@@ -236,6 +279,45 @@ reports *usable* coverage so a drift shows up instead of hiding behind a false
 ```bash
 python embed.py --stats       # Files indexed / Usable (join files) / Orphaned
 ```
+
+---
+
+## Measuring retrieval quality
+
+Tuning retrieval by feel does not work — scores live in a narrow band, and a change that
+*looks* better on one query often is not. `benchmark.py` makes it measurable.
+
+```bash
+cp probes.example.json probes.json     # then write signal queries for YOUR vault
+python3 benchmark.py                   # per-probe scores + separation
+python3 benchmark.py --save base.json  # record a baseline before changing anything
+python3 benchmark.py --compare base.json
+```
+
+Probes come in two kinds:
+
+- **`signal`** — real questions with documented answers. These *should* score high.
+- **`noise`** — gibberish. These *should* score low. They are the control.
+
+The headline number is **separation** = mean best signal score − mean best noise score.
+
+Separation is the honest measure because a raw score means very little on its own. An index
+that has only seen titles and headings will rank *everything* in one narrow band — including
+nonsense — because ops notes share a structural vocabulary. Only the gap between a real
+question and gibberish tells you whether the index understands meaning. At or below zero,
+it does not.
+
+Keep the noise probes as shipped; they are vault-independent. Write your own signal probes,
+and include at least one whose answer lives in a note **body** rather than any title — that
+is the case a title-only index cannot reach, and the clearest thing chunking buys.
+
+---
+
+## Verifying a fresh install
+
+The empty-vault path is the one that breaks, and it is the first thing a new adopter runs — the
+first time that test was written it found two bugs a populated vault could not surface. Procedure:
+[[docs/verifying-a-fresh-install]].
 
 ---
 

@@ -39,19 +39,27 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import DEFAULT_TOP_K, MIN_SCORE, default_db_path, format_hits, retrieve  # noqa: E402
+from common import (  # noqa: E402
+    DEFAULT_TOP_K,
+    MIN_SCORE,
+    default_db_path,
+    format_chunk_hits,
+    format_hits,
+    retrieve,
+    retrieve_chunks,
+)
 
 MAX_PROMPT_CHARS = 500   # only the opening of the prompt is embedded
 MIN_PROMPT_CHARS = 10    # below this there's nothing to retrieve on
 EMBED_TIMEOUT = 10       # a human is waiting; give up fast
 
 
-def format_context(results: list[dict]) -> str:
+def format_context(results: list[dict], chunked: bool = False) -> str:
     if not results:
         return ""
     lines = ["<vault-context>",
              "Relevant notes from your knowledge vault (use as background context):\n"]
-    lines.extend(format_hits(results))
+    lines.extend(format_chunk_hits(results) if chunked else format_hits(results))
     lines.append("</vault-context>")
     return "\n".join(lines)
 
@@ -87,9 +95,18 @@ def main():
         sys.exit(0)
 
     try:
-        results = retrieve(args.db or default_db_path(), prompt[:MAX_PROMPT_CHARS],
-                           top_k=args.top, min_score=args.min_score, timeout=EMBED_TIMEOUT)
-        context = format_context(results)
+        db = args.db or default_db_path()
+        query = prompt[:MAX_PROMPT_CHARS]
+        # Chunked body-text retrieval is the real index; the title-only store is
+        # the fallback so the hook still works mid-rebuild or before the first
+        # `embed_chunks.py` run.
+        results = retrieve_chunks(db, query, top_k=args.top,
+                                  min_score=args.min_score, timeout=EMBED_TIMEOUT)
+        chunked = bool(results)
+        if not results:
+            results = retrieve(db, query, top_k=args.top,
+                               min_score=args.min_score, timeout=EMBED_TIMEOUT)
+        context = format_context(results, chunked=chunked)
         if context:
             print(context)
     except Exception:

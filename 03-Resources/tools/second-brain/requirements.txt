@@ -1,3 +1,10 @@
-# Floor is the verified-working installed version (pip show mcp -> 1.27.2, 2026-08-07),
-# not a guess. mcp_server.py imports mcp.server.fastmcp.
+# Floors are the verified-working installed versions, not guesses.
+
+# pip show mcp -> 1.27.2 (2026-08-07). mcp_server.py imports mcp.server.fastmcp.
 mcp>=1.27.2
+
+# Required by the chunked body-text index (common.retrieve_chunks,
+# embed_chunks.py): scoring tens of thousands of chunks per query is a single
+# matmul in numpy and unusably slow as a pure-Python loop, and the vector matrix
+# is stored as a float32 .npy sidecar rather than JSON in SQLite.
+numpy>=1.23.5

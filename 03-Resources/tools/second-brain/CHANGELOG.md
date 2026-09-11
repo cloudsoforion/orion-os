@@ -13,6 +13,74 @@ status: active
 
 # Changelog
 
+## [0.4.0] — 2026-09-11
+
+Body text is now embedded. Before this release the index was built from
+`path | title | headings | tags` only — a table of contents, not a search index. With
+headings alone, notes sharing a structural vocabulary (Findings / Impact / Decision) all
+look equally similar to any query: real questions and nonsense land in the same narrow
+score band, and the best a query can do is rediscover a note you could have found by
+filename.
+
+### Added
+- **`chunker.py`** — pure, heading-aware markdown chunking. Text in, chunks out; no I/O,
+  no network, no DB, so the whole contract is unit-testable. Splits on headings first, then
+  paragraph boundaries; prepends a `title > H1 > H2` context trail to every chunk so a
+  passage about "Root cause" still knows which document it came from.
+- **`embed_chunks.py`** — builds the chunk index. `--dry-run` reports chunk counts per
+  pillar and writes nothing; `--limit N` is a smoke test; `--stats` shows coverage.
+- **`common.retrieve_chunks()`** — scores every chunk with one numpy matmul over a
+  memory-mapped matrix and returns the best passage per file, deduped.
+- **`chunks` table + `vault-vectors.npy` sidecar.** Chunk metadata in SQLite; vectors in a
+  float32 `(N, 768)` L2-normalised matrix. A 768-dim vector is ~15,900 chars as JSON text
+  and 3,072 bytes as float32 — **5.2x smaller** — which is the difference between a
+  manageable sidecar and a multi-hundred-megabyte database. `np.load(mmap_mode="r")` makes
+  the per-prompt hook's startup a page-cache hit rather than a full-matrix read.
+- **Snippets in results.** `format_chunk_hits()` returns the matching passage and its
+  heading trail, so one search is usually enough without a follow-up read.
+- **Pillar filtering** — `exclude_prefixes` in the API, `--no-archive` in `search.py`,
+  `exclude_archive` in the MCP tool. An archive pillar is typically the largest and least
+  current share of the index.
+- **`tests/test_chunker.py`** (21) and **`tests/test_chunk_store.py`** (14) — the chunking
+  contract and the store's bookkeeping. No network, no live vault.
+- **numpy** in `requirements.txt`. Scoring tens of thousands of chunks per query is one
+  matmul in numpy and unusably slow as a pure-Python loop.
+- **`benchmark.py` + `probes.example.json`** — measures retrieval quality so *"did that
+  change help?"* has an answer instead of an opinion. Probes are declared in JSON, not in
+  code, because the queries that prove a vault works are specific to that vault.
+  `--save` records a baseline and `--compare` shows the per-probe delta.
+  The headline metric is **separation** — mean best `signal` score minus mean best `noise`
+  score. Noise probes are gibberish that *should* rank low; if they don't, retrieval is
+  matching structure rather than meaning and every other number is decoration. Measured on
+  the reference vault, chunking moved separation **+0.141 → +0.199**, with signal probes up
+  and keyboard mash *down*.
+- **`tests/test_benchmark.py`** (24) — probe validation, separation maths, baseline diffing.
+
+### Changed
+- `hook.py`, `mcp_server.py` and `search.py` prefer the chunk store and **fall back to the
+  title-only store** when it is absent, so nothing breaks mid-rebuild or before the first
+  `embed_chunks.py` run.
+- Vectors are L2-normalised **at write time**, so retrieval is a dot product rather than a
+  per-query cosine.
+
+### Known limitations
+- **`embed_chunks.py` is a full rebuild, not incremental.** It re-embeds everything. An
+  mtime-keyed incremental mode is the obvious next step, and matters more than it sounds:
+  an index is only as fresh as its last build, and the notes you most want to find are the
+  ones you just wrote.
+- **`MIN_SCORE = 0.55` is now loosely calibrated.** Chunking raises scores across the board,
+  so far more chunks clear the floor than notes used to. Ranking carries the results; the
+  floor does little. A higher floor is probably right but should be measured per vault.
+- **Short keyword queries gain nothing.** Body text only helps when the query carries enough
+  meaning to match prose. Ask a question, not a keyword.
+- **`vault-vectors.npy` is a large generated artifact** — gitignore it. A fresh checkout has
+  no index until `vault_indexer.py index` and `embed_chunks.py` have both run.
+- **The chunk store contains verbatim note text.** Previously the index leaked only a table
+  of contents; it now contains the content of every indexed note. Treat the database and the
+  matrix as being as sensitive as the vault itself.
+- The legacy `embeddings` table and `embed.py` remain for rollback and are now redundant.
+
+
 ## [0.3.0] — 2026-08-08
 
 ### Added

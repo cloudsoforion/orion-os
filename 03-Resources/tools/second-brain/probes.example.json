@@ -1,0 +1,35 @@
+{
+  "_comment": "Copy to probes.json and replace the SIGNAL queries with ones that mean something in YOUR vault. The NOISE probes are universal — keep them as they are; they are the control that proves the index measures meaning rather than structure.",
+  "probes": [
+    {
+      "label": "exact title",
+      "query": "REPLACE ME — the exact title of a note you know exists",
+      "kind": "signal",
+      "why": "a one-word/title match. This is the case body-text embedding does NOT improve, so it anchors the ceiling."
+    },
+    {
+      "label": "how-to question",
+      "query": "REPLACE ME — a real question whose answer is documented in your vault",
+      "kind": "signal",
+      "why": "the everyday case: a question, not a keyword"
+    },
+    {
+      "label": "buried-answer question",
+      "query": "REPLACE ME — a question whose answer is in a note BODY, not in any title",
+      "kind": "signal",
+      "why": "the case a title-only index structurally cannot reach. The clearest demonstration of why chunking matters."
+    },
+    {
+      "label": "real-word nonsense",
+      "query": "purple banana helicopter sandwich",
+      "kind": "noise",
+      "why": "well-formed English with no meaning in any vault. Must be rejected."
+    },
+    {
+      "label": "keyboard mash",
+      "query": "asdfgh qwerty zxcvb",
+      "kind": "noise",
+      "why": "character gibberish. On a title-only index this can out-score the relevance floor."
+    }
+  ]
+}

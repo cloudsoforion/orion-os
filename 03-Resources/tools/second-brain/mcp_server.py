@@ -50,9 +50,11 @@ from common import (  # noqa: E402
     MIN_SCORE,
     compute_index_stats,
     default_db_path,
+    format_chunk_hits,
     format_hits,
     format_index_stats,
     retrieve,
+    retrieve_chunks,
 )
 
 MAX_TOP_K = 20
@@ -73,27 +75,42 @@ mcp = FastMCP(_args.name)
 
 
 @mcp.tool()
-def search_vault(query: str, top_k: int = DEFAULT_TOP_K) -> str:
+def search_vault(query: str, top_k: int = DEFAULT_TOP_K,
+                 exclude_archive: bool = False) -> str:
     """
     Search the Obsidian vault for notes relevant to a topic.
 
+    Searches the body text of every note and returns the matching passage, so a
+    result is usually enough on its own without a follow-up Read.
+
     IMPORTANT: `query` is a natural language search string ONLY.
-    `top_k` is a separate integer parameter for the number of results.
+    `top_k` and `exclude_archive` are separate parameters.
     Never combine them — pass "cluster upgrade rollback" not "cluster upgrade, top_k=10".
 
     Args:
         query: Natural language search string, e.g. "cluster upgrade rollback plan"
         top_k: Integer number of results to return. Default is 5. Maximum is 20.
+        exclude_archive: Set True to skip `04-Archive/`, usually the largest and
+            least current share of the index. Use it when you want current state
+            rather than history.
     """
     if not DB_PATH.exists():
         return "Vault index not found. Run vault_indexer.py index first."
 
-    results = retrieve(DB_PATH, query, top_k=min(top_k, MAX_TOP_K),
-                       min_score=MIN_SCORE, timeout=EMBED_TIMEOUT)
-    if not results:
-        return f"No vault notes found above relevance threshold for: {query}"
+    k = min(top_k, MAX_TOP_K)
+    exclude = ("04-Archive/",) if exclude_archive else ()
+    results = retrieve_chunks(DB_PATH, query, top_k=k, min_score=MIN_SCORE,
+                              timeout=EMBED_TIMEOUT, exclude_prefixes=exclude)
+    if results:
+        return "\n".join([f"Vault notes relevant to: {query}\n",
+                          *format_chunk_hits(results)])
 
-    return "\n".join([f"Vault notes relevant to: {query}\n", *format_hits(results)])
+    # Fallback: title-only store, used before the first embed_chunks.py run.
+    legacy = retrieve(DB_PATH, query, top_k=k, min_score=MIN_SCORE, timeout=EMBED_TIMEOUT)
+    if not legacy:
+        return f"No vault notes found above relevance threshold for: {query}"
+    return "\n".join([f"Vault notes relevant to: {query} (title-only index)\n",
+                      *format_hits(legacy)])
 
 
 @mcp.tool()
