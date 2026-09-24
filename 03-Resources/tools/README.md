@@ -1,11 +1,11 @@
 ---
 created: "20260807"
-updated: "20260808"
+updated: "20260924"
 tags:
   - type/readme
   - domain/tooling
   - created/20260807
-  - updated/20260808
+  - updated/20260924
   - domain/knowledge-management
   - status/active
 author: Claude (claude-opus-5)
@@ -41,6 +41,7 @@ The rule and its rationale are in [[03-Resources/tools/CONTRIBUTING]] § The sha
 | [[03-Resources/tools/process_frontmatter/README\|process_frontmatter]] | Stamps `created/YYYYMMDD` + `updated/YYYYMMDD` tags from the filename, the folder path, or git. **Dry-run by default.** | `process_frontmatter.py` |
 | [[03-Resources/tools/stamp-out/README\|stamp-out]] | Stamps out a timestamped copy of a vault folder with internal links and paths rewritten. | `stamp_out.py` |
 | [[03-Resources/tools/scan-broken-wikilinks/README\|scan-broken-wikilinks]] | Finds wikilinks that don't resolve, and bare basenames that resolve by luck. Enforces the vault-absolute standard. | `scan_broken_wikilinks.py` |
+| [[03-Resources/tools/outbound-path-guard/README\|outbound-path-guard]] | Claude Code `PreToolUse` hook that denies outbound tool calls (tracker, chat, `gh pr create`) carrying wikilinks, vault paths or machine-local paths. **Fails open.** | `outbound_path_guard.py` |
 
 > ### There is deliberately no archival or retention tool
 >
@@ -89,6 +90,7 @@ the same way after any change.
 | process_frontmatter | ✅ | ✅ | ✅ 51 | ✅ | ✅ |
 | stamp-out | ✅ | ✅ | ✅ 27 | n/a | ✅ |
 | scan-broken-wikilinks | ✅ | ✅ | ✅ 62 | n/a (stdlib) | ✅ |
+| outbound-path-guard | ✅ | ✅ | ✅ 27 | n/a (stdlib) | ✅ |
 | `vault_config` (shared) | in this file | n/a | ✅ 32 | n/a (stdlib) | — |
 | [[templates/tool-scaffold/README\|tool-scaffold]] | ✅ | ✅ (stub) | ✅ 4 | ✅ (stub) | ✅ |
 

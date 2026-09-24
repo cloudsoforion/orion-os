@@ -1,9 +1,9 @@
 ---
 created: "20260808"
-updated: "20260808"
+updated: "20260924"
 tags:
   - created/20260808
-  - updated/20260808
+  - updated/20260924
   - type/how-to
   - domain/tooling
   - status/active
@@ -121,6 +121,36 @@ python3 03-Resources/tools/second-brain/embed.py
 
 `embed.py --stats` reports coverage. It counts only embeddings that still join to a live file, so a
 path drift shows up as a falling number instead of hiding behind a false 100%.
+
+## Outbound path guard
+
+[[03-Resources/tools/outbound-path-guard/README|outbound-path-guard]] is a `PreToolUse` hook that
+denies an outbound tool call (a tracker, chat, docs or email write, or a publishing `gh`/`curl`
+command) when its text contains a reference only this machine can resolve, such as a wikilink,
+a vault path, or `/Users/…`. It's optional and separate from second-brain; `register.py` does not
+install it.
+
+Add it to `.claude/settings.json` under `hooks.PreToolUse`, using an absolute path as with the
+second-brain hook:
+
+```json
+{
+  "matcher": "Bash|mcp__linear-server__.*|mcp__claude_ai_Slack__.*|mcp__notion__.*|mcp__claude_ai_Gmail__.*",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "python3 <vault>/03-Resources/tools/outbound-path-guard/outbound_path_guard.py",
+      "timeout": 10,
+      "statusMessage": "Checking outbound text..."
+    }
+  ]
+}
+```
+
+The server names in `matcher` are examples. Change them to the MCP servers you actually have
+connected, and keep them in step with `OUTBOUND_SERVERS` in the script. After editing, open `/hooks`
+once or restart so the change is picked up. Then make a deliberately dirty outbound call and check
+that it's denied.
 
 ## Related
 

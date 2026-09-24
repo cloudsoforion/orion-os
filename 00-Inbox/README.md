@@ -1,9 +1,9 @@
 ---
 created: "20260808"
-updated: "20260808"
+updated: "20260924"
 tags:
   - created/20260808
-  - updated/20260808
+  - updated/20260924
   - type/readme
   - domain/knowledge-management
   - status/active
@@ -47,11 +47,13 @@ the inbox. See [[OrionOs]].
 
 1. **Captures** are processed at the weekly review. Each one becomes a Project, files to Resources,
    archives, or is deleted. Nothing "lives" here as a to-do.
-2. **Work-dirs graduate or archive** — never linger:
-   - Grows multi-week, or spawns follow-on work → **promote to `02-Projects/`**.
-   - One-off (granted access, quick troubleshoot) → **archive to `04-Archive/` on completion**.
-   - **Trigger:** at the weekly review, any work-dir older than two weeks gets promoted or
-     archived. That is the whole rule.
+2. **Work-dirs graduate, or wait to be mined** — they leave by two different rules
+   ([[OrionOs]] § Inbox):
+   - Grows multi-week, spawns follow-on work, or acquires a ticket → **promote to `02-Projects/`**.
+     Promotion is never gated.
+   - Finished → mined into the brag doc, then **archived to `04-Archive/work/<review-period>/`
+     after the review cycle runs**. Retention is gated on the review cycle, not on age.
+   - Before archiving, sweep its open to-dos into the owning Area's backlog.
 3. **The ops journal is not capture.** Daily summaries, standups, and priorities docs are a
    recurring stream with its own home in `Log/` — see [[Log/README]].
 
@@ -83,7 +85,8 @@ Conventions.
 
 ## Retention
 
-Nothing here is permanent, and that is the point. The weekly review is the retention mechanism.
+Nothing here is permanent, but nothing leaves on a timer either: finished work-dirs are archived
+after the review cycle that mines them. See [[OrionOs]] § Inbox.
 
 ⚠️ **There is currently no retention tool.** `archive-folders` was retired 2026-08-08 and has no
 successor, so promoting and archiving is a manual move — in Obsidian, never `mv`. The requirements a

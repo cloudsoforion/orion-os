@@ -1,7 +1,7 @@
 ---
 tags:
   - created/20260729
-  - updated/20260729
+  - updated/20260924
   - domain/knowledge-management
   - type/standard
   - status/active
@@ -26,6 +26,37 @@ no leading slash, no `.md`. See [[AGENTS]] § Markdown & Naming Conventions.
 Applies to every directory under `03-Resources/tools/`. One directory per tool. A tool is
 "done" when it passes the [Definition of done](#definition-of-done) checklist — not when
 the script runs.
+
+### What belongs here
+
+Anything **you** run that reads the vault, writes to it, or reports into it. That is the test —
+not the subject matter. A tool that scans container images or cloud accounts rather than markdown
+still belongs here if its output is material you triage and prioritise in the vault.
+
+### What doesn't, and where it goes instead
+
+The deciding question is **audience**, not subject matter. A tool whose audience is your team
+cannot live in a personal vault — nobody else can reach it, and a vault path is not resolvable to
+anyone but you.
+
+| Destination | For | Notes |
+| --- | --- | --- |
+| `03-Resources/tools/` | You, operating on or reporting into the vault | This standard, in full |
+| Your team's shared tooling repo | **Team-audience** ops tooling | Promote only after the tool has been run for real a few times — see below |
+| The owning system's repo (e.g. its `hack/` or `scripts/` dir) | Ops tooling with an obvious upstream home | Prefer this over a new shared location when one exists |
+| A personal portable-tools repo (the author's is [quiver](https://github.com/ldalorion/quiver)) | Portable tooling with no employer specifics | Give it a verification gate that rejects employer identifiers, so work-specific tooling can never land there |
+
+### Promotion to team-audience
+
+A tool graduates outward the same way work graduates through the vault: it earns the move, it is
+not born there.
+
+1. The prototype lives in the work folder that produced it, alongside the doc explaining why it
+   exists.
+2. If you keep reaching for it, it comes here and takes on this standard.
+3. Once it has been **battle-tested on real incidents a few times**, it is promoted to the team
+   repo — at which point the rationale doc stays in the vault and links out to the tool, rather
+   than the tool being copied in two places.
 
 ---
 

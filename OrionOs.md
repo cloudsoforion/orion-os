@@ -1,9 +1,9 @@
 ---
 created: "20260808"
-updated: "20260808"
+updated: "20260924"
 tags:
   - created/20260808
-  - updated/20260808
+  - updated/20260924
   - type/standard
   - domain/knowledge-management
   - status/active
@@ -96,8 +96,33 @@ candidate improvements you aren't working yet.
   Project until it's actually `active`.
 - **Graduation:** backlog item → you commit and start → it moves into `02-Projects/` as `active` →
   it ships → recorded in `CHANGELOG/` or archived.
+- **Every Area has a `backlog.md`.** If a piece of work has no Area that owns it, that is the signal
+  to *create the Area* — not to file the work somewhere convenient.
 
 **That is the only moment a doc moves.** Everything else is a status change and a link.
+
+### Where deferred and out-of-scope work goes
+
+**The owning Area's backlog. Always.** This is the answer for every kind of "I'm not doing this now,
+but it must not be lost":
+
+| What | Goes to | As |
+|---|---|---|
+| An idea you haven't committed to | Area backlog | `someday` |
+| Work you committed to and deliberately set down | Area backlog | `paused` |
+| Something found mid-task that was **out of scope** (a `## Follow-ups` item) | Area backlog | `someday` |
+| **Unfinished `## Next actions` from work that is wrapping up** | Area backlog | `paused` |
+
+- **Route it when it goes out of scope, not when the project ends.** Archiving is the *deadline*,
+  not the trigger — the moment something is deliberately not-now, it gets a backlog row, even if the
+  work it came from is still `active`.
+- **Links, not moves.** The backlog row points at wherever the doc already lives. The finding stays
+  next to the work that produced it; the backlog is the *index* that makes it findable. Nothing
+  moves until it graduates to `02-Projects/`.
+- **A row with no link and no next step is a wish, not a backlog item.** Every row says what it is
+  and *what picking it up would start with*.
+- **No Area owns it?** Create the Area. A responsibility with recurring deferred work and no home is
+  a missing Area, and burying the work in a finished Project is how it dies.
 
 ```
 00-Inbox  ──capture──▶  triage
@@ -124,6 +149,61 @@ candidate improvements you aren't working yet.
 > python3 03-Resources/tools/scan-broken-wikilinks/scan_broken_wikilinks.py
 > ```
 
+## Inbox
+
+`00-Inbox/` is a queue, not a folder — see [[00-Inbox/README]] for what lands there. Two things
+leave it, and they leave by different rules.
+
+### Graduation (work-dirs → Projects)
+
+A work-dir that grows multi-week, spawns follow-on work, or acquires a ticket is a **Project**:
+promote it to `02-Projects/` (Obsidian drag) and give it a `README` from
+`templates/project-README.md`. Promotion is **never gated** — do it the moment the work is
+recognisably a project.
+
+### Retention is gated on your review cycle, not on age
+
+Finished work-dirs are **mined for your performance review first, then archived.** Archiving is the
+*last* step, and it does not happen on a timer:
+
+```
+work-dir finishes → mined into the brag doc → review cycle runs → THEN archive to 04-Archive/work/<review-period>/
+```
+
+- **Never archive ahead of the mining pass.** In a brag-doc entry, the Result — the number, and
+  who it affected — is the one beat you cannot reconstruct cold. An archived folder reads as
+  finished, so nobody reopens it to look for the number.
+- **The buckets in `04-Archive/work/` are review periods**, not calendar quarters. Name them as
+  ranges.
+- **If the cycle slips, retention slips with it — and that is correct, not neglect.** A full inbox
+  after a skipped or delayed review cycle means the ritual that empties the queue has not run yet,
+  not that anything is broken.
+
+> Do not replace this with an "older than N days" sweep. Age does not know whether the work has
+> been mined yet. An earlier age-based archiving tool was retired for exactly this reason: it
+> encoded one moment's assumptions and archived work nobody had harvested.
+
+## Archives
+
+### Sweep before you archive
+
+**Nothing is archived or written to `CHANGELOG/` while it still holds live to-dos that exist nowhere
+else.** Ideally these were routed as they arose (see *Where deferred and out-of-scope work goes*) —
+this is the **last call**, not the first pass. Archiving is the moment unfinished work is most
+likely to be lost: the project reads as finished, so nobody opens it again.
+
+Before moving a work item to `04-Archive/` or recording it in `CHANGELOG/`:
+
+1. **Read its unticked boxes** — `## Next actions`, `## Follow-ups`, any `- [ ]` left open, and
+   every warning with no ticket behind it.
+2. **For each one, decide out loud:** genuinely dead (say so in the doc), already tracked elsewhere
+   (link it), or still wanted → **add a row to the owning Area's backlog** pointing back at the doc.
+3. **Then** archive. The archived doc keeps its unticked boxes as a record; the backlog row is what
+   keeps them alive.
+
+An unfinished task that only ever existed inside a closed project is indistinguishable from one that
+was never written down.
+
 ## Routines
 
 The repeatable rhythms and non-negotiables that keep the work and the repo running. Routines are
@@ -146,7 +226,7 @@ top-level pillar — which also avoids renumbering `00`–`04`.
 |---|---|---|
 | Daily summary | End of day | The record of what you did. `vault-indexer summary` generates it. |
 | Weekly priorities | Monday | What this week is for. Lives in `Log/<week-Monday>/`. |
-| Weekly review | Weekly | Process the inbox; graduate or archive every work-dir older than two weeks. This is `00-Inbox`'s retention mechanism. |
+| Weekly review | Weekly | Process the inbox; graduate any work-dir that has become a project, and route stray to-dos to Area backlogs. Archiving waits for the review cycle (see *Inbox*). |
 | Archive mining | Monthly | Pick one archived folder, pull what's still true into `03-Resources/`, link back. Keeps the archive from being a graveyard. |
 
 ## Related

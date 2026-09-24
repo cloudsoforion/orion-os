@@ -4,7 +4,7 @@ A working operating system for a knowledge repository, as an Obsidian vault you 
 using. **PARA + GTD + Routines**, plus the tooling that keeps it honest.
 
 This isn't a folder-structure gist. It's the folder model *and* the conventions that stop it rotting
-*and* five tested Python tools that enforce them — extracted from a vault that has been in daily use
+*and* six tested Python tools that enforce them — extracted from a vault that has been in daily use
 for five years, with the failure modes it accumulated written down as rules.
 
 ```
@@ -55,6 +55,7 @@ index: [[03-Resources/tools/README]].
 | [[03-Resources/tools/process_frontmatter/README\|process_frontmatter]] | Stamps `created/` and `updated/` tags, resolving the date from the filename, the folder path, or git — and skipping rather than guessing. |
 | [[03-Resources/tools/scan-broken-wikilinks/README\|scan-broken-wikilinks]] | Finds links that don't resolve, and bare basenames that resolve *by luck*. Enforces the wikilink standard. |
 | [[03-Resources/tools/stamp-out/README\|stamp-out]] | Copies a folder with its internal wikilinks and path references repointed at the copy. For per-run runbooks. |
+| [[03-Resources/tools/outbound-path-guard/README\|outbound-path-guard]] | A Claude Code hook that blocks tracker, chat and PR writes containing wikilinks, vault paths or `/Users/…` paths that no other reader can open. |
 | [[03-Resources/tools/second-brain/README\|second-brain]] | Local semantic search over the vault — Ollama embeddings, an MCP server, and a Claude Code hook. Needs Ollama; the rest don't. |
 
 ```bash
