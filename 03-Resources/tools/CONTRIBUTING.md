@@ -13,11 +13,11 @@ author: Claude (claude-opus-5)
 Standards for vault tooling. Derived from the tools that already live here — this codifies the
 patterns the good ones share, it does not invent new ones.
 
-Related: [[AGENTS]] (vault-wide conventions), [[CLAUDE]] (metadata + documentation
-standards), [[OrionOs]] (folder model, "move files in Obsidian only" rule).
+Related: [AGENTS](../../AGENTS.md) (vault-wide conventions), [CLAUDE](../../CLAUDE.md) (metadata + documentation
+standards), [OrionOs](../../OrionOs.md) (folder model, "move files in Obsidian only" rule).
 
-Every `[[wikilink]]` in this doc is **vault-absolute** — the full path from the vault root,
-no leading slash, no `.md`. See [[AGENTS]] § Markdown & Naming Conventions.
+This doc renders on GitHub, so its links are relative markdown links rather than `[[wikilinks]]`.
+See [AGENTS](../../AGENTS.md) § Markdown & Naming Conventions for when each form applies.
 
 ---
 
@@ -78,7 +78,7 @@ not born there.
 
 Supporting design notes, session logs, and screenshots may live in the tool folder
 (`vault-indexer/improvements/`, `second-brain/2026*-*.md` are the precedent). Keep them
-date-prefixed so [[03-Resources/tools/vault-indexer/README|vault-indexer]] can date them.
+date-prefixed so [vault-indexer](vault-indexer/README.md) can date them.
 
 ---
 
@@ -111,8 +111,8 @@ Every entrypoint:
 4. **`argparse`**, always — no positional-only `sys.argv` parsing.
 5. **`--dry-run` is mandatory for anything that mutates the vault** (writes frontmatter,
    moves files, deletes rows). **Dry-run is the default where the blast radius is large**, with
-   `--apply` required to act — [[templates/tool-scaffold/README|tool-scaffold]] encodes this.
-   [[AGENTS]] treats dry-run output as the acceptance test, so it must print *what* changes,
+   `--apply` required to act — [tool-scaffold](../../templates/tool-scaffold/README.md) encodes this.
+   [AGENTS](../../AGENTS.md) treats dry-run output as the acceptance test, so it must print *what* changes,
    not just *how many*.
    ⚠️ The cautionary tale is `archive-folders` (retired 2026-08-08): `--dry-run` was opt-in, so
    the documented invocation ran a **live** `git mv` with no preview. See
@@ -127,7 +127,7 @@ Every entrypoint:
    `git mv` and must rewrite wikilinks (`stamp_out.py` is the reference).
    Shell-moving vault files without link rewriting is the failure that broke ~1000
    wikilinks in the June 2026 reorg.
-9. **PEP 8, short typed functions, comment only non-obvious logic** ([[AGENTS]] § Python Utilities).
+9. **PEP 8, short typed functions, comment only non-obvious logic** ([AGENTS](../../AGENTS.md) § Python Utilities).
 
 Prefer the stdlib. Two of the four tools are stdlib-only (`sqlite3`, `urllib`, `pathlib`,
 `argparse`); the only dependencies in the folder today are `PyYAML` and `mcp`.
@@ -202,7 +202,7 @@ Two anti-patterns to avoid, both present in the older READMEs:
   June 2026 reorg. Length was how the rot stayed hidden.
 
 **Absolute paths in a README rot.** Reference vault files with
-**vault-absolute** `[[wikilinks]]` ([[AGENTS]] § Markdown & Naming Conventions) and write
+**vault-absolute** `[[wikilinks]]` ([AGENTS](../../AGENTS.md) § Markdown & Naming Conventions) and write
 repo-relative paths for everything else. Hardcoded
 `<vault>/...` is acceptable only where the path is genuinely required verbatim
 (hook and MCP registration blocks).
@@ -211,8 +211,8 @@ repo-relative paths for everything else. Hardcoded
 
 ## CHANGELOG.md
 
-Keep-a-Changelog, adapted. Format is fixed by [[03-Resources/tools/vault-indexer/CHANGELOG|vault-indexer]] and
-[[03-Resources/tools/second-brain/CHANGELOG|second-brain]]:
+Keep-a-Changelog, adapted. Format is fixed by [vault-indexer](vault-indexer/CHANGELOG.md) and
+[second-brain](second-brain/CHANGELOG.md):
 
 ```markdown
 # Changelog
@@ -270,7 +270,7 @@ Conventions, taken from the three existing suites:
   `test_monday_maps_to_itself`, `test_crosses_month_boundary`. No `unittest.TestCase`.
 - **Filesystem tests use `tmp_path`** and build a throwaway vault (`.obsidian/` + a
   handful of `.md` files); set mtimes explicitly with `os.utime` rather than depending on
-  wall-clock. Note that [[03-Resources/tools/20260605-filesystem-timestamps-unreliable]] applies — never
+  wall-clock. Note that [03-Resources/tools/20260605-filesystem-timestamps-unreliable](20260605-filesystem-timestamps-unreliable.md) applies — never
   assert on real vault timestamps.
 - **DB tests use `sqlite3.connect(":memory:")`** with a fixture that mirrors the real
   schema (`second-brain/tests/conftest.py`).
@@ -321,14 +321,14 @@ Rules:
 - **`status:` scalar and the `status/` tag must agree.** A tool that is unsafe to run gets
   `blocked` in both, not `active` in one and `blocked` in the other.
 - **Dates come from git, not the filesystem** — first and last commit touching the file.
-  Vault mtimes are unreliable; see [[03-Resources/tools/20260605-filesystem-timestamps-unreliable]].
+  Vault mtimes are unreliable; see [03-Resources/tools/20260605-filesystem-timestamps-unreliable](20260605-filesystem-timestamps-unreliable.md).
   Untracked files fall back to the current date.
 
 ⚠️ **GitHub caveat.** GitHub renders YAML frontmatter as a **table at the top of the rendered
 page**. If this repo's tool docs are browsed on GitHub rather than in Obsidian, that table is the
 accepted cosmetic cost of keeping one frontmatter convention everywhere — not an oversight.
 
-New tools get this for free from [[templates/tool-scaffold/README|tool-scaffold]].
+New tools get this for free from [tool-scaffold](../../templates/tool-scaffold/README.md).
 
 ---
 

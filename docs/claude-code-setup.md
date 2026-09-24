@@ -13,7 +13,7 @@ status: active
 # Wiring OrionOs into Claude Code
 
 Two optional integrations, both provided by
-[[03-Resources/tools/second-brain/README|second-brain]]. Everything else in this vault works without
+[second-brain](../03-Resources/tools/second-brain/README.md). Everything else in this vault works without
 either.
 
 | Integration | Behaviour |
@@ -124,7 +124,7 @@ path drift shows up as a falling number instead of hiding behind a false 100%.
 
 ## Outbound path guard
 
-[[03-Resources/tools/outbound-path-guard/README|outbound-path-guard]] is a `PreToolUse` hook that
+[outbound-path-guard](../03-Resources/tools/outbound-path-guard/README.md) is a `PreToolUse` hook that
 denies an outbound tool call (a tracker, chat, docs or email write, or a publishing `gh`/`curl`
 command) when its text contains a reference only this machine can resolve, such as a wikilink,
 a vault path, or `/Users/…`. It's optional and separate from second-brain; `register.py` does not
@@ -154,6 +154,6 @@ that it's denied.
 
 ## Related
 
-- [[03-Resources/tools/second-brain/README]] — the tool itself, in full
-- [[docs/adopting-into-an-existing-vault]] — if this vault isn't a fresh clone
-- [[CLAUDE]] — the guidance Claude Code reads from this repo
+- [03-Resources/tools/second-brain/README](../03-Resources/tools/second-brain/README.md) — the tool itself, in full
+- [docs/adopting-into-an-existing-vault](adopting-into-an-existing-vault.md) — if this vault isn't a fresh clone
+- [CLAUDE](../CLAUDE.md) — the guidance Claude Code reads from this repo

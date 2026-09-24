@@ -16,7 +16,7 @@ status: active
 Finds wikilinks that don't resolve, and the ones that resolve by luck. Reports both by default and
 writes nothing; repairs are opt-in and never rewrite a link toward a target that doesn't exist.
 
-This enforces the standard in [[AGENTS]] § Markdown & Naming Conventions — vault-absolute links,
+This enforces the standard in [AGENTS](../../../AGENTS.md) § Markdown & Naming Conventions — vault-absolute links,
 always — which until now had no automated check.
 
 ## How it works
@@ -129,8 +129,8 @@ Stdlib only — no `requirements.txt`. Run from anywhere inside the vault.
 
 ## Related
 
-- [[AGENTS]] — § Markdown & Naming Conventions, the standard this checks
+- [AGENTS](../../../AGENTS.md) — § Markdown & Naming Conventions, the standard this checks
 - `vault_config.py` — skip-dirs, `link_remaps`, `exclude_paths`, tag prefixes
 - the July link triage —
   the July triage that asked for the basename mode
-- [[03-Resources/tools/CONTRIBUTING]] — the standard this tool is measured against
+- [03-Resources/tools/CONTRIBUTING](../CONTRIBUTING.md) — the standard this tool is measured against

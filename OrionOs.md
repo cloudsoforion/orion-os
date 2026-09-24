@@ -19,8 +19,8 @@ An operating model for a working knowledge repository: **PARA + GTD + Routines**
 - **Routines** — the non-negotiables that keep it running
 
 This file is the **source of truth** for the folder model, the `status:` vocabulary, and the
-lifecycle. Everything else in the repo points here rather than restating it — [[CLAUDE]] for the
-agent-facing rules, [[AGENTS]] for the conventions that apply when changing files, and each pillar's
+lifecycle. Everything else in the repo points here rather than restating it — [CLAUDE](CLAUDE.md) for the
+agent-facing rules, [AGENTS](AGENTS.md) for the conventions that apply when changing files, and each pillar's
 own `README.md` for what belongs in it.
 
 Horizons are deliberately omitted. They're personal and very high-level; this model is for work.
@@ -40,10 +40,10 @@ templates/    note and document templates
 
 The numbering is not decoration: it sorts the pillars into the order work moves through them. Two
 operational folders sit outside PARA because they are streams rather than states — see
-[[Log/README]] and [[CHANGELOG/README]].
+[Log/README](Log/README.md) and [CHANGELOG/README](CHANGELOG/README.md).
 
 **The folder names live in `vault.json`.** Rename a pillar there and the tooling follows; nothing
-hardcodes them. See [[03-Resources/tools/CONTRIBUTING]] § The shared config module.
+hardcodes them. See [03-Resources/tools/CONTRIBUTING](03-Resources/tools/CONTRIBUTING.md) § The shared config module.
 
 ### Boundaries by purpose, not content
 
@@ -151,7 +151,7 @@ but it must not be lost":
 
 ## Inbox
 
-`00-Inbox/` is a queue, not a folder — see [[00-Inbox/README]] for what lands there. Two things
+`00-Inbox/` is a queue, not a folder — see [00-Inbox/README](00-Inbox/README.md) for what lands there. Two things
 leave it, and they leave by different rules.
 
 ### Graduation (work-dirs → Projects)
@@ -212,7 +212,7 @@ top-level pillar — which also avoids renumbering `00`–`04`.
 
 **Implementation**
 
-- One doc per routine under `01-Areas/Routines/` (an Area you create — see [[01-Areas/README]]),
+- One doc per routine under `01-Areas/Routines/` (an Area you create — see [01-Areas/README](01-Areas/README.md)),
   with a `README.md` index.
 - Tag each step **non-negotiable** (established) or **building** (new, not yet automatic).
   Aspirational-only steps get their own section — honest beats aspirational.
@@ -231,8 +231,8 @@ top-level pillar — which also avoids renumbering `00`–`04`.
 
 ## Related
 
-- [[CLAUDE]] — metadata standards and the documentation-quality rules
-- [[AGENTS]] — naming, wikilinks, and the conventions for changing files
-- [[00-Inbox/README]] · [[01-Areas/README]] · [[02-Projects/README]] · [[03-Resources/README]] ·
-  [[04-Archive/README]] · [[Log/README]] · [[CHANGELOG/README]]
-- [[docs/adopting-into-an-existing-vault]] — if you already have a vault
+- [CLAUDE](CLAUDE.md) — metadata standards and the documentation-quality rules
+- [AGENTS](AGENTS.md) — naming, wikilinks, and the conventions for changing files
+- [00-Inbox/README](00-Inbox/README.md) · [01-Areas/README](01-Areas/README.md) · [02-Projects/README](02-Projects/README.md) · [03-Resources/README](03-Resources/README.md) ·
+  [04-Archive/README](04-Archive/README.md) · [Log/README](Log/README.md) · [CHANGELOG/README](CHANGELOG/README.md)
+- [docs/adopting-into-an-existing-vault](docs/adopting-into-an-existing-vault.md) — if you already have a vault

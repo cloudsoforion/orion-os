@@ -10,26 +10,26 @@ model. It holds work notes, reference material, and the tooling that maintains t
 
 ## Operating Model & Structure
 
-The vault runs on **OrionOs** (PARA + GTD + Routines). **[[OrionOs]] is the source of truth** for the
+The vault runs on **OrionOs** (PARA + GTD + Routines). **[OrionOs](OrionOs.md) is the source of truth** for the
 pillar folders (`00-Inbox`, `01-Areas`, `02-Projects`, `03-Resources`, `04-Archive`), the `status:`
 frontmatter values and their meanings, the graduation/lifecycle flow (idea → Area backlog →
 `02-Projects/` → `CHANGELOG/` or `04-Archive/`), and the standing **"move files in Obsidian only,
-never `mv`"** rule. Do not restate any of that here — read [[OrionOs]] and the per-pillar READMEs.
+never `mv`"** rule. Do not restate any of that here — read [OrionOs](OrionOs.md) and the per-pillar READMEs.
 
 Two operational folders sit outside the PARA pillars:
 
 - `Log/` — the ops journal. Daily summaries and weekly priorities live in per-week folders:
   `Log/<week-Monday>/<YYYYMMDD>-daily-summary.md` and
-  `Log/<week-Monday>/priorities-week-of-<week-Monday>.md`. See [[Log/README]].
-- `CHANGELOG/` — the record of shipped changes to the vault itself. See [[CHANGELOG/README]].
-- `templates/` — note templates. See [[templates/README]].
+  `Log/<week-Monday>/priorities-week-of-<week-Monday>.md`. See [Log/README](Log/README.md).
+- `CHANGELOG/` — the record of shipped changes to the vault itself. See [CHANGELOG/README](CHANGELOG/README.md).
+- `templates/` — note templates. See [templates/README](templates/README.md).
 
 **Folder names are configuration, not constants.** They live in `vault.json`; no tool hardcodes them.
 
 ## Key Tools and Scripts
 
 Vault tooling lives under `03-Resources/tools/`, one directory per tool, plus one shared module.
-Full index: [[03-Resources/tools/README]]. Standard: [[03-Resources/tools/CONTRIBUTING]].
+Full index: [03-Resources/tools/README](03-Resources/tools/README.md). Standard: [03-Resources/tools/CONTRIBUTING](03-Resources/tools/CONTRIBUTING.md).
 
 ```bash
 # What shape does the vault think it is? (resolves vault.json)
@@ -51,20 +51,20 @@ python3 03-Resources/tools/second-brain/search.py "cluster upgrade rollback plan
 ```
 
 New tools go in `03-Resources/tools/<tool-name>/`, started from
-[[templates/tool-scaffold/README|tool-scaffold]] so they begin compliant.
+[tool-scaffold](templates/tool-scaffold/README.md) so they begin compliant.
 
 ### Daily Note Template
 
 `templates/wtf-am-i-doing-YYYYMMDD.md` is the primary daily note — meeting tracking, inbox review,
 Tasks queries, and Dataview queries for files created or updated today. Other templates live
-alongside it; see [[templates/README]].
+alongside it; see [templates/README](templates/README.md).
 
 ## Metadata Standards
 
 - All markdown files include YAML frontmatter with `tags`.
 - `created/YYYYMMDD` and `updated/YYYYMMDD` tags track dates, maintained by `process_frontmatter.py`.
   **Dates come from the filename, the folder path, or git — never from filesystem mtime**, which does
-  not survive a bulk copy. See [[03-Resources/tools/20260605-filesystem-timestamps-unreliable]].
+  not survive a bulk copy. See [03-Resources/tools/20260605-filesystem-timestamps-unreliable](03-Resources/tools/20260605-filesystem-timestamps-unreliable.md).
 - `author` names the creator, e.g. `Claude (claude-opus-5)` for AI-generated content.
 - Cross-cutting discovery tags: `domain/`, `type/`, `status/`, `project/`, `product/`.
   **`type/` is the document genre, never the subject** — that's what makes "show me every changelog,
@@ -72,7 +72,7 @@ alongside it; see [[templates/README]].
 - Exactly one `type/` and one `status/` per file, and the `status:` scalar must agree with the
   `status/` tag.
 - **Lifecycle `status:`** values (`inbox`, `active`, `review`, `blocked`, `paused`, `done`) are
-  defined in [[OrionOs]] — use those.
+  defined in [OrionOs](OrionOs.md) — use those.
 
 The prefixes themselves are configuration: `tag_prefixes` in `vault.json`.
 
@@ -113,5 +113,6 @@ into the vault:
   the vault root, no leading slash, no `.md`: `[[03-Resources/tools/vault-indexer/README]]`, alias
   form `[[full/path|short label]]` for readable prose, `![[full/path]]` to embed. Bare basenames are
   ambiguous or unresolved and break silently. Confirm the target exists before writing the link, and
-  check your work with `scan_broken_wikilinks.py`. Full rationale: [[AGENTS]] § Markdown & Naming
-  Conventions.
+  check your work with `scan_broken_wikilinks.py`. Full rationale: [AGENTS](AGENTS.md) § Markdown & Naming
+  Conventions. **Exception:** the root `README.md` and the docs it links to render on GitHub, so they
+  use relative markdown links instead — see that section's *Exception* subsection.

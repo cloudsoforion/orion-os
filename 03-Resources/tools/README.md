@@ -14,10 +14,10 @@ author: Claude (claude-opus-5)
 # `03-Resources/tools/`
 
 Vault tooling. One directory per tool. The standard every tool here is measured against is
-[[03-Resources/tools/CONTRIBUTING]] — read it before adding anything.
+[03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md) — read it before adding anything.
 
 **One standard, one place.** If you keep tools elsewhere too, conform them to
-[[03-Resources/tools/CONTRIBUTING]] rather than letting a second standard grow.
+[03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md) rather than letting a second standard grow.
 
 ---
 
@@ -28,7 +28,7 @@ Vault tooling. One directory per tool. The standard every tool here is measured 
 | `vault_config.py` | The one place that knows the vault's shape: vault-root discovery, pillar folder names, `log_dir`, tag prefixes, `author`, skip-dirs, and the `YYYYMMDD`/`YYYYMMDDHHMM` date recogniser. Reads `vault.json` at the vault root. **Not a tool** — no tool re-declares any of it. |
 
 Run `python3 03-Resources/tools/vault_config.py` to see exactly what a tool would resolve.
-The rule and its rationale are in [[03-Resources/tools/CONTRIBUTING]] § The shared config module.
+The rule and its rationale are in [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md) § The shared config module.
 
 ---
 
@@ -36,12 +36,12 @@ The rule and its rationale are in [[03-Resources/tools/CONTRIBUTING]] § The sha
 
 | Tool | What it does | Entrypoint |
 | --- | --- | --- |
-| [[03-Resources/tools/vault-indexer/README\|vault-indexer]] | SQLite index of the vault plus daily/range work summaries. **Reference implementation of the standard.** | `vault_indexer.py` |
-| [[03-Resources/tools/second-brain/README\|second-brain]] | Local RAG over the vault — Ollama embeddings, MCP server, session hook. `register.py` wires both into Claude Code with resolved paths. | `embed.py` / `mcp_server.py` |
-| [[03-Resources/tools/process_frontmatter/README\|process_frontmatter]] | Stamps `created/YYYYMMDD` + `updated/YYYYMMDD` tags from the filename, the folder path, or git. **Dry-run by default.** | `process_frontmatter.py` |
-| [[03-Resources/tools/stamp-out/README\|stamp-out]] | Stamps out a timestamped copy of a vault folder with internal links and paths rewritten. | `stamp_out.py` |
-| [[03-Resources/tools/scan-broken-wikilinks/README\|scan-broken-wikilinks]] | Finds wikilinks that don't resolve, and bare basenames that resolve by luck. Enforces the vault-absolute standard. | `scan_broken_wikilinks.py` |
-| [[03-Resources/tools/outbound-path-guard/README\|outbound-path-guard]] | Claude Code `PreToolUse` hook that denies outbound tool calls (tracker, chat, `gh pr create`) carrying wikilinks, vault paths or machine-local paths. **Fails open.** | `outbound_path_guard.py` |
+| [vault-indexer](vault-indexer/README.md) | SQLite index of the vault plus daily/range work summaries. **Reference implementation of the standard.** | `vault_indexer.py` |
+| [second-brain](second-brain/README.md) | Local RAG over the vault — Ollama embeddings, MCP server, session hook. `register.py` wires both into Claude Code with resolved paths. | `embed.py` / `mcp_server.py` |
+| [process_frontmatter](process_frontmatter/README.md) | Stamps `created/YYYYMMDD` + `updated/YYYYMMDD` tags from the filename, the folder path, or git. **Dry-run by default.** | `process_frontmatter.py` |
+| [stamp-out](stamp-out/README.md) | Stamps out a timestamped copy of a vault folder with internal links and paths rewritten. | `stamp_out.py` |
+| [scan-broken-wikilinks](scan-broken-wikilinks/README.md) | Finds wikilinks that don't resolve, and bare basenames that resolve by luck. Enforces the vault-absolute standard. | `scan_broken_wikilinks.py` |
+| [outbound-path-guard](outbound-path-guard/README.md) | Claude Code `PreToolUse` hook that denies outbound tool calls (tracker, chat, `gh pr create`) carrying wikilinks, vault paths or machine-local paths. **Fails open.** | `outbound_path_guard.py` |
 
 > ### There is deliberately no archival or retention tool
 >
@@ -57,7 +57,7 @@ The rule and its rationale are in [[03-Resources/tools/CONTRIBUTING]] § The sha
 > If you build a successor, it must: not hardcode a destination taxonomy; treat retention as a
 > **date** question rather than a folder question; default to dry-run and print the resolved
 > destination *before* touching anything; use `git mv` and rewrite wikilinks; and ship with tests.
-> See [[03-Resources/tools/CONTRIBUTING]] § Retiring a tool for the note you write when it, too,
+> See [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md) § Retiring a tool for the note you write when it, too,
 > turns out to be unused.
 
 ## Common commands
@@ -92,24 +92,24 @@ the same way after any change.
 | scan-broken-wikilinks | ✅ | ✅ | ✅ 62 | n/a (stdlib) | ✅ |
 | outbound-path-guard | ✅ | ✅ | ✅ 27 | n/a (stdlib) | ✅ |
 | `vault_config` (shared) | in this file | n/a | ✅ 32 | n/a (stdlib) | — |
-| [[templates/tool-scaffold/README\|tool-scaffold]] | ✅ | ✅ (stub) | ✅ 4 | ✅ (stub) | ✅ |
+| [tool-scaffold](../../templates/tool-scaffold/README.md) | ✅ | ✅ (stub) | ✅ 4 | ✅ (stub) | ✅ |
 
 **284 tests across 7 suites, all passing** (98 before the 2026-08-08 convergence). Every tool
 is fully compliant, and no tool declares its own folder names, tag prefixes, `author`, or
 skip-dirs.
 
 Track per-tool compliance in a **dated audit note** rather than by editing this table's history —
-re-run it as a new dated doc so the trend stays visible. See [[03-Resources/tools/CONTRIBUTING]]
+re-run it as a new dated doc so the trend stays visible. See [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md)
 § Compliance.
 
 ## Adding a tool
 
-Start from [[templates/tool-scaffold/README|templates/tool-scaffold]] so it begins compliant, then
-work the Definition of done in [[03-Resources/tools/CONTRIBUTING]]. Add a row to both tables above.
+Start from [templates/tool-scaffold](../../templates/tool-scaffold/README.md) so it begins compliant, then
+work the Definition of done in [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md). Add a row to both tables above.
 
 ## Related
 
-- [[03-Resources/tools/CONTRIBUTING]] — the standard every tool here is measured against
-- [[03-Resources/tools/20260605-filesystem-timestamps-unreliable]] — why tests must not assert on
+- [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md) — the standard every tool here is measured against
+- [03-Resources/tools/20260605-filesystem-timestamps-unreliable](20260605-filesystem-timestamps-unreliable.md) — why tests must not assert on
   real vault timestamps, and why dates come from git
-- [[AGENTS]] · [[CLAUDE]] · [[OrionOs]] — vault-wide conventions and the operating model
+- [AGENTS](../../AGENTS.md) · [CLAUDE](../../CLAUDE.md) · [OrionOs](../../OrionOs.md) — vault-wide conventions and the operating model

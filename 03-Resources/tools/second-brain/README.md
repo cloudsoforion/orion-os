@@ -16,7 +16,7 @@ status: active
 Local-first RAG system for the Obsidian vault. Surfaces relevant context from
 past work before every Claude Code prompt — automatically or on demand.
 
-Builds on [[03-Resources/tools/vault-indexer/README|vault-indexer]], which handles file scanning and metadata extraction.
+Builds on [vault-indexer](../vault-indexer/README.md), which handles file scanning and metadata extraction.
 This layer adds embeddings, vector search, and two integration modes.
 
 ## Architecture (layered)
@@ -29,7 +29,7 @@ This layer adds embeddings, vector search, and two integration modes.
 - Good for: daily use, laptops, offline
 
 > Layers 2 and 3 below are **design intent, not shipped code.** Nothing in this repo talks to
-> Postgres or Kubernetes today. See [[docs/deploying-second-brain]] for what each would actually
+> Postgres or Kubernetes today. See [docs/deploying-second-brain](../../../docs/deploying-second-brain.md) for what each would actually
 > take, and why Layer 1 covers more ground than it looks like it should.
 
 ### Layer 2 — Local pgvector (Docker)
@@ -317,7 +317,7 @@ is the case a title-only index cannot reach, and the clearest thing chunking buy
 
 The empty-vault path is the one that breaks, and it is the first thing a new adopter runs — the
 first time that test was written it found two bugs a populated vault could not surface. Procedure:
-[[docs/verifying-a-fresh-install]].
+[docs/verifying-a-fresh-install](../../../docs/verifying-a-fresh-install.md).
 
 ---
 
@@ -356,6 +356,6 @@ Use **both**: hook for passive background context, MCP for deliberate deep dives
 
 ## Related
 
-- [[03-Resources/tools/vault-indexer/README|vault-indexer]] — upstream indexer this builds on
+- [vault-indexer](../vault-indexer/README.md) — upstream indexer this builds on
 - vault-indexer-update-requests — vault-indexer improvement backlog
 - https://cloudrumble.net/blog/2026/02/24/rag-homelab-kubernetes/ — colleague's Layer 2/3 implementation

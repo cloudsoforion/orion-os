@@ -24,11 +24,11 @@ templates/    note templates, including a compliant tool scaffold
 2. Install the community plugins the templates need: **Dataview**, **Tasks**, **Calendar**.
 3. Edit `vault.json` — set `author`, and rename any pillar you want called something else. The
    tooling reads that file; nothing hardcodes folder names.
-4. Read [[OrionOs]]. It's the source of truth for the model, the `status:` vocabulary, and the one
+4. Read [OrionOs](OrionOs.md). It's the source of truth for the model, the `status:` vocabulary, and the one
    rule that matters most: **move notes in Obsidian, never with `mv`**.
 5. Create your first Area: `cp templates/area-README.md 01-Areas/<Area-Name>/README.md`.
 
-Already have a vault? See [[docs/adopting-into-an-existing-vault]].
+Already have a vault? See [docs/adopting-into-an-existing-vault](docs/adopting-into-an-existing-vault.md).
 
 ## What's actually in here
 
@@ -36,9 +36,9 @@ Already have a vault? See [[docs/adopting-into-an-existing-vault]].
 
 | Doc | What it defines |
 |---|---|
-| [[OrionOs]] | The pillars, the 6-state `status:` vocabulary, the graduation rule, the Routines |
-| [[CLAUDE]] | Metadata standards and seven documentation-quality rules, written for an AI agent but true for a human |
-| [[AGENTS]] | Naming, the vault-absolute wikilink standard, and the rules for changing files |
+| [OrionOs](OrionOs.md) | The pillars, the 6-state `status:` vocabulary, the graduation rule, the Routines |
+| [CLAUDE](CLAUDE.md) | Metadata standards and seven documentation-quality rules, written for an AI agent but true for a human |
+| [AGENTS](AGENTS.md) | Naming, the vault-absolute wikilink standard, and the rules for changing files |
 
 Each pillar folder has a `README.md` stating what belongs in it and — more usefully — a table of what
 does **not**, with where each near-miss goes instead. That table is what makes the model
@@ -46,17 +46,17 @@ self-enforcing.
 
 ### The tools
 
-Five tools, one shared config module, **284 passing tests**, stdlib-only except where noted. Full
-index: [[03-Resources/tools/README]].
+Six tools, one shared config module, **368 passing tests**, stdlib-only except where noted. Full
+index: [03-Resources/tools/README](03-Resources/tools/README.md).
 
 | Tool | What it does |
 |---|---|
-| [[03-Resources/tools/vault-indexer/README\|vault-indexer]] | SQLite index of the vault; generates daily and date-range work summaries. Tracks inodes and content hashes so a *move* isn't mistaken for an *edit*. |
-| [[03-Resources/tools/process_frontmatter/README\|process_frontmatter]] | Stamps `created/` and `updated/` tags, resolving the date from the filename, the folder path, or git — and skipping rather than guessing. |
-| [[03-Resources/tools/scan-broken-wikilinks/README\|scan-broken-wikilinks]] | Finds links that don't resolve, and bare basenames that resolve *by luck*. Enforces the wikilink standard. |
-| [[03-Resources/tools/stamp-out/README\|stamp-out]] | Copies a folder with its internal wikilinks and path references repointed at the copy. For per-run runbooks. |
-| [[03-Resources/tools/outbound-path-guard/README\|outbound-path-guard]] | A Claude Code hook that blocks tracker, chat and PR writes containing wikilinks, vault paths or `/Users/…` paths that no other reader can open. |
-| [[03-Resources/tools/second-brain/README\|second-brain]] | Local semantic search over the vault — Ollama embeddings, an MCP server, and a Claude Code hook. Needs Ollama; the rest don't. |
+| [vault-indexer](03-Resources/tools/vault-indexer/README.md) | SQLite index of the vault; generates daily and date-range work summaries. Tracks inodes and content hashes so a *move* isn't mistaken for an *edit*. |
+| [process_frontmatter](03-Resources/tools/process_frontmatter/README.md) | Stamps `created/` and `updated/` tags, resolving the date from the filename, the folder path, or git — and skipping rather than guessing. |
+| [scan-broken-wikilinks](03-Resources/tools/scan-broken-wikilinks/README.md) | Finds links that don't resolve, and bare basenames that resolve *by luck*. Enforces the wikilink standard. |
+| [stamp-out](03-Resources/tools/stamp-out/README.md) | Copies a folder with its internal wikilinks and path references repointed at the copy. For per-run runbooks. |
+| [outbound-path-guard](03-Resources/tools/outbound-path-guard/README.md) | A Claude Code hook that blocks tracker, chat and PR writes containing wikilinks, vault paths or `/Users/…` paths that no other reader can open. |
+| [second-brain](03-Resources/tools/second-brain/README.md) | Local semantic search over the vault — Ollama embeddings, an MCP server, and a Claude Code hook. Needs Ollama; the rest don't. |
 
 ```bash
 python3 03-Resources/tools/vault_config.py                                      # what shape is this vault?
@@ -95,9 +95,9 @@ python3 03-Resources/tools/scan-broken-wikilinks/scan_broken_wikilinks.py
 
 ## Docs
 
-- [[docs/adopting-into-an-existing-vault]] — folding this into a vault you already have
-- [[docs/claude-code-setup]] — wiring the semantic-search hook and MCP server
-- [[03-Resources/tools/CONTRIBUTING]] — the standard every tool here meets, and how to add one
+- [docs/adopting-into-an-existing-vault](docs/adopting-into-an-existing-vault.md) — folding this into a vault you already have
+- [docs/claude-code-setup](docs/claude-code-setup.md) — wiring the semantic-search hook and MCP server
+- [03-Resources/tools/CONTRIBUTING](03-Resources/tools/CONTRIBUTING.md) — the standard every tool here meets, and how to add one
 
 ## License
 

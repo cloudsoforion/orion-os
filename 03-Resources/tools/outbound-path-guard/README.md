@@ -92,7 +92,7 @@ Nothing is written to disk. On a blocked call, stdout carries:
 Which MCP servers count as outbound is set by `OUTBOUND_SERVERS` at the top of the script. It ships
 with Linear, Slack, Notion and Gmail. Edit it to match the servers you have connected, and make the
 hook `matcher` in `.claude/settings.json` cover the same set. Registration is covered in
-[[docs/claude-code-setup]] § Outbound path guard.
+[docs/claude-code-setup](../../../docs/claude-code-setup.md) § Outbound path guard.
 
 ## Tests
 
@@ -119,6 +119,6 @@ To confirm the guard is live, make a deliberately dirty outbound call and check 
 
 ## Related
 
-- [[03-Resources/tools/CONTRIBUTING]]: the standard this tool follows
-- [[AGENTS]] § Markdown & Naming Conventions: the vault-absolute wikilink rule, which this guard
+- [03-Resources/tools/CONTRIBUTING](../CONTRIBUTING.md): the standard this tool follows
+- [AGENTS](../../../AGENTS.md) § Markdown & Naming Conventions: the vault-absolute wikilink rule, which this guard
   limits to inside the vault
