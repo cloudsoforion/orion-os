@@ -46,14 +46,14 @@ self-enforcing.
 
 ### The tools
 
-Six tools, one shared config module, **368 passing tests**, stdlib-only except where noted. Full
+Six tools, one shared config module, **396 passing tests**, stdlib-only except where noted. Full
 index: [03-Resources/tools/README](03-Resources/tools/README.md).
 
 | Tool | What it does |
 |---|---|
 | [vault-indexer](03-Resources/tools/vault-indexer/README.md) | SQLite index of the vault; generates daily and date-range work summaries. Tracks inodes and content hashes so a *move* isn't mistaken for an *edit*. |
 | [process_frontmatter](03-Resources/tools/process_frontmatter/README.md) | Stamps `created/` and `updated/` tags, resolving the date from the filename, the folder path, or git — and skipping rather than guessing. |
-| [scan-broken-wikilinks](03-Resources/tools/scan-broken-wikilinks/README.md) | Finds links that don't resolve, and bare basenames that resolve *by luck*. Enforces the wikilink standard. |
+| [scan-broken-wikilinks](03-Resources/tools/scan-broken-wikilinks/README.md) | Finds wikilinks and relative markdown links that don't resolve, and bare basenames that resolve *by luck*. Enforces the link standard. |
 | [stamp-out](03-Resources/tools/stamp-out/README.md) | Copies a folder with its internal wikilinks and path references repointed at the copy. For per-run runbooks. |
 | [outbound-path-guard](03-Resources/tools/outbound-path-guard/README.md) | A Claude Code hook that blocks tracker, chat and PR writes containing wikilinks, vault paths or `/Users/…` paths that no other reader can open. |
 | [second-brain](03-Resources/tools/second-brain/README.md) | Local semantic search over the vault — Ollama embeddings, an MCP server, and a Claude Code hook. Needs Ollama; the rest don't. |

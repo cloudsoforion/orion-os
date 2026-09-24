@@ -72,8 +72,8 @@ links**, which work in both GitHub and Obsidian:
 ```
 
 Everything else — notes, pillar READMEs, templates, changelogs — keeps vault-absolute wikilinks.
-⚠️ `scan_broken_wikilinks.py` checks wikilinks only, so after moving a front-door doc, check its
-relative links by hand (Obsidian's move updates them, a shell `mv` does not).
+`scan_broken_wikilinks.py` checks these too (2.1.0+), resolving each link relative to its own
+file the way GitHub does. Run it after moving a front-door doc.
 
 It reports links whose target is missing, and separates bare basenames into the ones with several
 candidates (Obsidian picks one, silently), the ones with none (an invisible break), and the ones with

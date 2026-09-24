@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-scan_broken_wikilinks.py — find wikilinks that don't resolve, and the ones that
-resolve by luck.
+scan_broken_wikilinks.py — find wikilinks that don't resolve, the ones that
+resolve by luck, and relative markdown links that don't resolve.
 
-Two problems, one pass:
+Three problems, one pass:
 
   1. **Broken path links.** `[[02-Projects/foo/bar]]` where no such file exists.
      Optionally repaired by rewriting a stale top-level prefix to its current one,
@@ -14,6 +14,13 @@ Two problems, one pass:
      links because a basename with several candidates resolves unpredictably —
      Obsidian silently picks one — and a basename with none renders as
      unclickable text that is invisible in reading view.
+  3. **Broken markdown links.** `[label](../foo/bar.md)` in the docs that render on
+     GitHub ([[AGENTS]] § Markdown & Naming Conventions, *Exception*). These resolve
+     **relative to the linking file**, as GitHub resolves them. A link that only
+     works read from the vault root is reported separately: Obsidian falls back to
+     that and it looks fine, but it is broken on GitHub. `--apply` rewrites it to the
+     correct relative path, since that target is known to exist. External URLs,
+     `#anchors`, and `mailto:`-style links are not checked.
 
 **Dry-run is the default.** Nothing is written without `--apply` (repairs) or
 `--promote-basenames` (rewrites unambiguous basenames to full paths).
@@ -42,6 +49,9 @@ Statuses in the report:
   basename-ambiguous   bare basename with >1 candidate; Obsidian picks one, silently
   basename-unresolved  bare basename with no candidate at all        -> invisible break
   basename-single      bare basename with exactly 1 candidate        -> --promote-basenames
+  md-broken            markdown link whose target exists nowhere      -> needs a human
+  md-root-relative     markdown link that resolves only from the vault root;
+                       fine in Obsidian, broken on GitHub             -> --apply fixes it
 
 Deliberate exclusions, and why the count is much lower than a naive grep's:
 
@@ -72,6 +82,7 @@ import fnmatch
 import os
 import re
 import sys
+from urllib.parse import quote, unquote
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -80,10 +91,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import vault_config
 
 LINK_RE = re.compile(r"(!?)\[\[([^\[\]]+?)\]\]")
+# `[label](target)`, `[label](<target with spaces>)`, `[label](target "title")`.
+# The label may not start with `[`, so the tail of a `[[wikilink]]` never matches.
+# One level of balanced parens is allowed in a target, as CommonMark does —
+# Notion exports name files like `Review_(employees)_abc.md`.
+MD_LINK_RE = re.compile(
+    r"(!?\[(?!\[)[^\]\n]*\]\()(<[^>\n]+>|(?:[^()\s]|\([^()\s]*\))+)((?:\s+\"[^\"]*\")?\))")
+SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 
 PATH_STATUSES = ("fixable", "remap-no-target", "no-remap")
 BASENAME_STATUSES = ("basename-ambiguous", "basename-unresolved", "basename-single")
+MD_STATUSES = ("md-broken", "md-root-relative")
+ALL_STATUSES = (*PATH_STATUSES, *BASENAME_STATUSES, *MD_STATUSES)
+FIX_FLAGS = {"fixable": "--apply", "md-root-relative": "--apply",
+             "basename-single": "--promote-basenames"}
 
 
 # --------------------------------------------------------------------------
@@ -183,6 +205,38 @@ def classify_basename_link(target: str, by_name: dict[str, list[str]]) -> tuple[
     return "basename-ambiguous", None
 
 
+def split_md_target(raw: str) -> tuple[str, str, bool] | None:
+    """`<a b.md>` / `a%20b.md#frag` -> (decoded path, `#frag` suffix, was_bracketed).
+
+    None for a link that isn't a local file reference — a URL, `mailto:`, or a
+    same-page `#anchor` — since those are not this tool's business.
+    """
+    bracketed = raw.startswith("<") and raw.endswith(">")
+    target = raw[1:-1] if bracketed else raw
+    # A target opening with `[` is a nested, pasted-in link (`[a]([b](url))`),
+    # not a path; the inner link is checked on its own.
+    if not target or target.startswith(("#", "[")) or SCHEME_RE.match(target):
+        return None
+    cut = min((i for i in (target.find("#"), target.find("?")) if i != -1), default=len(target))
+    return unquote(target[:cut]), target[cut:], bracketed
+
+
+def classify_md_link(vault: Path, source: Path, target: str) -> tuple[str, str | None]:
+    """(status, proposed) for a markdown link, resolved the way GitHub resolves it.
+
+    `source` is the linking file. A leading `/` means the vault root. Directories
+    count as resolving — GitHub renders a link to a folder as its listing.
+    """
+    if target.startswith("/"):
+        return ("ok", None) if (vault / target.lstrip("/")).exists() else ("md-broken", None)
+    if (source.parent / target).exists():
+        return "ok", None
+    if (vault / target).exists():
+        rel = os.path.relpath(vault / target, source.parent)
+        return "md-root-relative", Path(rel).as_posix()
+    return "md-broken", None
+
+
 def is_excluded(rel_path: str, patterns: list[str]) -> bool:
     """True if `rel_path` matches any glob in `patterns`.
 
@@ -203,6 +257,28 @@ def top_prefix(target: str) -> str:
 # --------------------------------------------------------------------------
 # I/O
 # --------------------------------------------------------------------------
+
+def _md_replacer(vault, path, rel_file, mask, line_no, apply_repairs, findings, on_change):
+    """`re.sub` callback for one line's markdown links."""
+    def replace(match):
+        if any(mask[match.start():match.end()]):
+            return match.group(0)      # inside inline code
+        parsed = split_md_target(match.group(2))
+        if parsed is None:
+            return match.group(0)
+        target, suffix, bracketed = parsed
+        status, proposed = classify_md_link(vault, path, target)
+        if status == "ok":
+            return match.group(0)
+        findings.append({"file": rel_file, "line": line_no, "target": target,
+                         "proposed": proposed, "status": status})
+        if apply_repairs and proposed:
+            on_change()
+            new = f"<{proposed}>" if bracketed else quote(proposed)
+            return f"{match.group(1)}{new}{suffix}{match.group(3)}"
+        return match.group(0)
+    return replace
+
 
 def iter_files(vault: Path, config: dict, only_md: bool = False):
     """Files under the vault, skipping the directories vault.json names and dotfiles."""
@@ -243,8 +319,12 @@ def index_basenames(vault: Path, config: dict) -> dict[str, list[str]]:
 def scan(vault: Path, config: dict, remap: dict, by_name: dict,
          check_basenames: bool = True, apply_repairs: bool = False,
          promote_basenames: bool = False,
-         exclude: list[str] | None = None) -> tuple[list[dict], int]:
-    """Walk the vault and classify every wikilink. Returns (findings, files_written)."""
+         exclude: list[str] | None = None,
+         check_markdown: bool = True) -> tuple[list[dict], int]:
+    """Walk the vault and classify every wikilink and relative markdown link.
+
+    Returns (findings, files_written).
+    """
     findings: list[dict] = []
     files_written = 0
     exclude = exclude or []
@@ -265,10 +345,23 @@ def scan(vault: Path, config: dict, remap: dict, by_name: dict,
             if FENCE_RE.match(line):
                 in_fence = not in_fence
                 continue
-            if in_fence or "[[" not in line:
+            has_md = check_markdown and "](" in line
+            if in_fence or ("[[" not in line and not has_md):
                 continue
 
             mask = mask_code(line)
+
+            if has_md:
+                def mark_changed():
+                    nonlocal changed
+                    changed = True
+                line = MD_LINK_RE.sub(
+                    _md_replacer(vault, path, rel_file, mask, index + 1,
+                                 apply_repairs, findings, mark_changed), line)
+                lines[index] = line
+                mask = mask_code(line)   # a rewrite can shift offsets
+                if "[[" not in line:
+                    continue
 
             def replace(match, _line_no=index + 1):
                 nonlocal changed
@@ -341,7 +434,7 @@ def format_report(vault: Path, findings: list[dict], counts: dict, remap: dict,
         "author: scan-broken-wikilinks",
         "---",
         "",
-        f"# Broken wikilink report — {datetime.now():%Y-%m-%d %H:%M}",
+        f"# Broken link report — {datetime.now():%Y-%m-%d %H:%M}",
         "",
         f"- Vault: `{vault}`",
         f"- Mode: {'APPLIED — files were rewritten' if applied else 'dry run — nothing written'}",
@@ -369,8 +462,10 @@ def format_report(vault: Path, findings: list[dict], counts: dict, remap: dict,
         "basename-ambiguous": "bare basename with >1 candidate; Obsidian picks one, silently",
         "basename-unresolved": "bare basename with no candidate — an invisible break",
         "basename-single": "bare basename with exactly 1 candidate — `--promote-basenames` fixes it",
+        "md-broken": "markdown link whose target exists nowhere — needs a human",
+        "md-root-relative": "markdown link that resolves only from the vault root; broken on GitHub — `--apply` fixes it",
     }
-    for status in (*PATH_STATUSES, *BASENAME_STATUSES):
+    for status in ALL_STATUSES:
         lines.append(f"| `{status}` | **{counts.get(status, 0)}** | {meanings[status]} |")
 
     lines += ["", f"**Total findings: {len(findings)}**", "", "## By link prefix", ""]
@@ -379,9 +474,9 @@ def format_report(vault: Path, findings: list[dict], counts: dict, remap: dict,
         buckets[top_prefix(finding["target"])] += 1
     lines += ["| Prefix | Count |", "|---|---|"]
     for prefix, count in sorted(buckets.items(), key=lambda kv: -kv[1]):
-        lines.append(f"| `[[{prefix}…]]` | {count} |")
+        lines.append(f"| `{prefix}…` | {count} |")
 
-    for status in (*PATH_STATUSES, *BASENAME_STATUSES):
+    for status in ALL_STATUSES:
         rows = [f for f in findings if f["status"] == status]
         lines += ["", f"## {status} ({len(rows)})", ""]
         if not rows:
@@ -396,18 +491,21 @@ def format_report(vault: Path, findings: list[dict], counts: dict, remap: dict,
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Find wikilinks that don't resolve, and bare basenames that resolve by luck. "
-                    "Previews by default.")
+        description="Find wikilinks that don't resolve, bare basenames that resolve by luck, "
+                    "and relative markdown links that don't resolve. Previews by default.")
     parser.add_argument("--vault", type=Path, default=None,
                         help="Vault root (default: found by walking up for .obsidian/)")
     parser.add_argument("--remap", action="append", default=[], metavar="OLD/=NEW/",
                         help="Prefix remap, repeatable. Adds to `link_remaps` in vault.json.")
     parser.add_argument("--apply", action="store_true",
-                        help="Rewrite broken path links whose remapped target exists.")
+                        help="Rewrite broken path links whose remapped target exists, and "
+                             "root-relative markdown links to the correct relative path.")
     parser.add_argument("--promote-basenames", action="store_true",
                         help="Rewrite [[name]] to [[full/path|name]] where exactly one file matches.")
     parser.add_argument("--no-basenames", action="store_true",
                         help="Only check path-style links; skip the basename analysis.")
+    parser.add_argument("--no-markdown", action="store_true",
+                        help="Skip markdown [label](path) links; check wikilinks only.")
     parser.add_argument("--exclude", action="append", default=[], metavar="GLOB",
                         help="Skip files matching this vault-relative glob, repeatable. "
                              "Adds to `exclude_paths` in vault.json. Use for generated notes "
@@ -431,6 +529,7 @@ def main() -> int:
 
     writing = args.apply or args.promote_basenames
     check_basenames = not args.no_basenames
+    check_markdown = not args.no_markdown
     exclude = [*config.get("exclude_paths", []), *args.exclude]
 
     if not args.quiet:
@@ -445,22 +544,23 @@ def main() -> int:
                              check_basenames=check_basenames,
                              apply_repairs=args.apply,
                              promote_basenames=args.promote_basenames,
-                             exclude=exclude)
+                             exclude=exclude, check_markdown=check_markdown)
 
     if writing:
         # Re-scan the post-write state so the summary reports what REMAINS,
         # never the work that was just done.
         by_name = index_basenames(vault, config) if check_basenames else {}
         findings, _ = scan(vault, config, remap, by_name,
-                           check_basenames=check_basenames, exclude=exclude)
+                           check_basenames=check_basenames, exclude=exclude,
+                           check_markdown=check_markdown)
 
     counts = summarize(findings)
 
     if writing:
         print(f"Rewrote {written} file(s).")
-    for status in (*PATH_STATUSES, *BASENAME_STATUSES):
-        if status in ("fixable", "basename-single") and counts.get(status):
-            flag = "--apply" if status == "fixable" else "--promote-basenames"
+    for status in ALL_STATUSES:
+        if status in FIX_FLAGS and counts.get(status):
+            flag = FIX_FLAGS[status]
             suffix = f"  (re-run with {flag} to fix)" if not writing else ""
         else:
             suffix = ""
@@ -479,7 +579,7 @@ def main() -> int:
             encoding="utf-8")
         print(f"\nReport: {out_path}")
 
-    if not writing and (counts.get("fixable") or counts.get("basename-single")):
+    if not writing and any(counts.get(s) for s in FIX_FLAGS):
         print("\nNothing was written.")
     return 0
 
