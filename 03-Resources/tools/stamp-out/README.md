@@ -125,6 +125,6 @@ hardcoded.
 
 - `vault_config.py` — vault-root discovery, tag prefixes,
   `author`, skip-dirs
-- [[03-Resources/tools/README]] — tool index
-- [[03-Resources/tools/CONTRIBUTING]] — the standard this meets
-- [[03-Resources/tools/stamp-out/CHANGELOG|CHANGELOG]] — version history
+- [03-Resources/tools/README](../README.md) — tool index
+- [03-Resources/tools/CONTRIBUTING](../CONTRIBUTING.md) — the standard this meets
+- [CHANGELOG](CHANGELOG.md) — version history

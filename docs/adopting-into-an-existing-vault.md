@@ -78,13 +78,13 @@ Commit before anything else. Everything below is recoverable from git and from n
 
 None of this requires moving a file:
 
-- **[[OrionOs]] § Statuses** — put a `status:` field on your active work. The `blocked` vs `paused`
+- **[OrionOs](../OrionOs.md) § Statuses** — put a `status:` field on your active work. The `blocked` vs `paused`
   distinction is the one that pays for itself immediately.
-- **[[AGENTS]] § Wikilinks** — vault-absolute links. Set `"newLinkFormat": "absolute"` and
+- **[AGENTS](../AGENTS.md) § Wikilinks** — vault-absolute links. Set `"newLinkFormat": "absolute"` and
   `"alwaysUpdateLinks": true` in `.obsidian/app.json` so Obsidian stops generating bare ones, then
   work through what the scanner reports.
-- **[[CLAUDE]] § Metadata Standards** — the tag namespaces, and one `type/` + one `status/` per file.
-- **[[CLAUDE]] § Documentation Standards** — the seven rules. Free, and the highest-leverage part of
+- **[CLAUDE](../CLAUDE.md) § Metadata Standards** — the tag namespaces, and one `type/` + one `status/` per file.
+- **[CLAUDE](../CLAUDE.md) § Documentation Standards** — the seven rules. Free, and the highest-leverage part of
   this whole repo.
 
 ### 4. Add the pillar READMEs
@@ -134,12 +134,12 @@ Perfectly reasonable. The pieces are genuinely independent:
 
 | Want just… | Take |
 |---|---|
-| The link discipline | `scan-broken-wikilinks/` + [[AGENTS]] § Wikilinks |
-| Consistent created/updated dates | `process_frontmatter/` + [[CLAUDE]] § Metadata Standards |
-| A record of what you did each day | `vault-indexer/` + [[Log/README]] |
-| Semantic search over your notes | `second-brain/` + [[docs/claude-code-setup]] |
-| The folder model, nothing else | [[OrionOs]] and the pillar READMEs |
-| A standard for your own scripts | [[03-Resources/tools/CONTRIBUTING]] |
+| The link discipline | `scan-broken-wikilinks/` + [AGENTS](../AGENTS.md) § Wikilinks |
+| Consistent created/updated dates | `process_frontmatter/` + [CLAUDE](../CLAUDE.md) § Metadata Standards |
+| A record of what you did each day | `vault-indexer/` + [Log/README](../Log/README.md) |
+| Semantic search over your notes | `second-brain/` + [docs/claude-code-setup](claude-code-setup.md) |
+| The folder model, nothing else | [OrionOs](../OrionOs.md) and the pillar READMEs |
+| A standard for your own scripts | [03-Resources/tools/CONTRIBUTING](../03-Resources/tools/CONTRIBUTING.md) |
 
 Every tool except `second-brain` depends only on `vault_config.py` and the stdlib
 (plus `PyYAML` for `process_frontmatter`).
@@ -155,13 +155,13 @@ Every tool except `second-brain` depends only on `vault_config.py` and the stdli
 - **Dates come from git, not mtime.** If your vault isn't a git repo, undated notes get skipped
   instead of dated. That's deliberate: mtime does not survive a bulk copy, and a fabricated date is
   indistinguishable from a real one once written. See
-  [[03-Resources/tools/20260605-filesystem-timestamps-unreliable]].
+  [03-Resources/tools/20260605-filesystem-timestamps-unreliable](../03-Resources/tools/20260605-filesystem-timestamps-unreliable.md).
 - **The index is derived data.** `vault-index.db` is gitignored and rebuilds from your notes in
   seconds. Delete it freely.
 
 ## Related
 
 - The repo `README.md` — what OrionOs is
-- [[OrionOs]] — the model
-- [[docs/claude-code-setup]] — the optional AI integrations
-- [[03-Resources/tools/README]] — the tool index
+- [OrionOs](../OrionOs.md) — the model
+- [docs/claude-code-setup](claude-code-setup.md) — the optional AI integrations
+- [03-Resources/tools/README](../03-Resources/tools/README.md) — the tool index

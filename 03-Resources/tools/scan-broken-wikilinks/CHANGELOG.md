@@ -1,9 +1,9 @@
 ---
 created: "20260616"
-updated: "20260808"
+updated: "20260924"
 tags:
   - created/20260616
-  - updated/20260808
+  - updated/20260924
   - type/changelog
   - domain/tooling
   - domain/knowledge-management
@@ -17,6 +17,33 @@ Versions 1.0.0 and 1.1.0 were developed at
 `CHANGELOG/20260616-updating-folder-structure/scan-broken-wikilinks/` as session tooling for the
 June 2026 reorg. 2.0.0 promoted it into a real tool under `03-Resources/tools/`; those two entries
 are carried forward verbatim rather than rewritten.
+
+## [2.1.0] — 2026-09-24
+
+### Added
+- **Markdown-link checking.** `[label](path)` and `![alt](path)` are resolved relative to the
+  linking file, the way GitHub resolves them. The GitHub-facing docs now use these instead of
+  wikilinks, and nothing was checking them. There are two new statuses: `md-broken`, where the
+  target exists nowhere, and `md-root-relative`, where the link resolves only from the vault root
+  (it works in Obsidian's fallback but is broken on GitHub). `--apply` rewrites
+  `md-root-relative` to the correct relative path, because the target is known to exist.
+- `--no-markdown` restores wikilink-only scanning.
+- Parsing rules, each pinned by a test:
+  - skip URLs, schemes, `#anchors`, and nested pasted links (`[a]([b](url))`);
+  - decode `%20`, and keep `%20` or `<…>` spelling on rewrite;
+  - keep `#fragment` and `"title"` through a rewrite;
+  - allow one level of balanced parens in a target (Notion export filenames).
+- Tests: 28 added, suite now 90.
+
+### Changed
+- Report heading is now "Broken link report"; the by-prefix table no longer wraps prefixes in
+  `[[…]]`. The report filename is unchanged.
+
+### Notes
+- The tool name still says "wikilinks". The rename is deferred to its own change.
+- First run on a mature vault: 54 `md-broken` and 6 `md-root-relative`, on top of the existing
+  wikilink findings. The nested-link and balanced-paren rules came from false positives in that
+  first run.
 
 ## [2.0.0] — 2026-08-08
 

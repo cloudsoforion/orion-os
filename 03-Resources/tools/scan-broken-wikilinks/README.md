@@ -1,9 +1,9 @@
 ---
 created: "20260616"
-updated: "20260808"
+updated: "20260924"
 tags:
   - created/20260616
-  - updated/20260808
+  - updated/20260924
   - type/readme
   - domain/tooling
   - domain/knowledge-management
@@ -13,10 +13,14 @@ status: active
 
 # scan-broken-wikilinks
 
-Finds wikilinks that don't resolve, and the ones that resolve by luck. Reports both by default and
-writes nothing; repairs are opt-in and never rewrite a link toward a target that doesn't exist.
+Finds wikilinks that don't resolve, the ones that resolve by luck, and relative markdown links that
+don't resolve. Reports all three by default and writes nothing. Repairs are opt-in and never rewrite a
+link toward a target that doesn't exist.
 
-This enforces the standard in [[AGENTS]] § Markdown & Naming Conventions — vault-absolute links,
+> The name predates markdown-link support. It still says "wikilinks" because renaming a tool
+> touches every doc and hook that calls it, so that's a separate change.
+
+This enforces the standard in [AGENTS](../../../AGENTS.md) § Markdown & Naming Conventions — vault-absolute links,
 always — which until now had no automated check.
 
 ## How it works
@@ -30,6 +34,12 @@ always — which until now had no automated check.
   attachments (`[[manifest.yaml]]`, `[[postmortem.pdf]]`) the same way notes are linked.
 - Classifies each link as a path link (does the target exist? does a remap fix it?) or a bare
   basename (how many candidates does the name have — none, one, or several?).
+- Checks **markdown links** (`[label](path)`, `![alt](path)`) the way GitHub resolves them:
+  **relative to the linking file**, with `%20` decoded, `#fragment` ignored, and a leading `/`
+  meaning the vault root. External URLs, `mailto:`-style schemes, same-page `#anchors`, and nested
+  pasted links (`[a]([b](url))`) are skipped. A target may contain one level of balanced
+  parentheses, as in CommonMark. These are the links the GitHub-facing docs use; see
+  [AGENTS](../../../AGENTS.md) § Markdown & Naming Conventions, *Exception*.
 - Optionally rewrites, in two independent modes, then **re-scans** so the summary reports what
   remains rather than the work just done.
 
@@ -43,6 +53,8 @@ always — which until now had no automated check.
 | `basename-ambiguous` | Bare basename with **>1** candidate — Obsidian picks one, silently | human |
 | `basename-unresolved` | Bare basename with **no** candidate — an invisible break | human |
 | `basename-single` | Bare basename with exactly **1** candidate — resolves, but violates the standard | `--promote-basenames` |
+| `md-broken` | Markdown link whose target exists nowhere | human |
+| `md-root-relative` | Markdown link that resolves only when read from the vault root. Obsidian falls back to that, so it works there, but it's broken on GitHub | `--apply` |
 
 A bare name whose single candidate is a **root-level** file is not a finding: for `[[AGENTS]]` the
 bare name already *is* the vault-absolute path.
@@ -77,9 +89,10 @@ python3 scan_broken_wikilinks.py --quiet
 | `--vault PATH` | Vault root. Default: found by walking up for `.obsidian/`. |
 | `--remap OLD/=NEW/` | Prefix rewrite, repeatable. Adds to `link_remaps` in `vault.json`. |
 | `--exclude GLOB` | Skip files matching a vault-relative glob, repeatable. Adds to `exclude_paths`. |
-| `--apply` | Rewrite `fixable` path links. Nothing else. |
+| `--apply` | Rewrite `fixable` path links, and `md-root-relative` links to the correct file-relative path. Nothing else. |
 | `--promote-basenames` | Rewrite `basename-single` links to full paths, keeping the old name as the alias. |
 | `--no-basenames` | Only check path links; skip the basename analysis entirely. |
+| `--no-markdown` | Skip markdown links; check wikilinks only (the pre-2.1.0 behaviour). |
 | `--report [PATH]` | Write a markdown report. Bare `--report` puts a dated one in `log_dir`. |
 | `--quiet` | Counts only. |
 
@@ -118,7 +131,7 @@ Nothing has been applied.
 python3 -m pytest tests/
 ```
 
-62 tests, no network, never the live vault. The two load-bearing ones:
+90 tests, no network, never the live vault. The two load-bearing ones:
 `test_does_not_rewrite_when_the_remapped_target_is_missing` (a repair must never convert a visibly
 broken link into a plausibly broken one) and the `TestScanDryRun` pair (a bare run leaves the vault
 byte-identical).
@@ -129,8 +142,8 @@ Stdlib only — no `requirements.txt`. Run from anywhere inside the vault.
 
 ## Related
 
-- [[AGENTS]] — § Markdown & Naming Conventions, the standard this checks
+- [AGENTS](../../../AGENTS.md) — § Markdown & Naming Conventions, the standard this checks
 - `vault_config.py` — skip-dirs, `link_remaps`, `exclude_paths`, tag prefixes
 - the July link triage —
   the July triage that asked for the basename mode
-- [[03-Resources/tools/CONTRIBUTING]] — the standard this tool is measured against
+- [03-Resources/tools/CONTRIBUTING](../CONTRIBUTING.md) — the standard this tool is measured against

@@ -15,6 +15,10 @@ lives inside a markdown table cell), fenced and inline code are not scanned
 and the basename index covers non-`.md` files (Obsidian links attachments the
 same way, and a markdown-only index called every one of those an invisible break).
 
+Markdown links (`[label](path)`) resolve **relative to the linking file**, as GitHub
+resolves them. One that only resolves from the vault root is its own status —
+Obsidian falls back to it, so it looks fine locally and is broken on GitHub.
+
 Run:  python3 -m pytest tests/
 No network. Never touches the live vault.
 """
@@ -30,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import vault_config  # noqa: E402
 from scan_broken_wikilinks import (  # noqa: E402
     classify_basename_link,
+    classify_md_link,
     classify_path_link,
     index_basenames,
     is_excluded,
@@ -39,6 +44,7 @@ from scan_broken_wikilinks import (  # noqa: E402
     resolves,
     scan,
     split_link,
+    split_md_target,
     summarize,
     top_prefix,
 )
@@ -374,3 +380,120 @@ class TestSummarizeAndPrefix:
 
     def test_top_prefix_of_a_basename(self):
         assert top_prefix("a") == "(basename)"
+
+
+class TestSplitMdTarget:
+    def test_plain_relative_path(self):
+        assert split_md_target("../a/b.md") == ("../a/b.md", "", False)
+
+    def test_percent_encoding_is_decoded(self):
+        assert split_md_target("a%20b.md") == ("a b.md", "", False)
+
+    def test_fragment_is_split_off_and_kept(self):
+        assert split_md_target("a.md#some-heading") == ("a.md", "#some-heading", False)
+
+    def test_angle_brackets_are_unwrapped(self):
+        assert split_md_target("<a b.md>") == ("a b.md", "", True)
+
+    @pytest.mark.parametrize("raw", ["https://example.com/x.md", "mailto:a@b.c",
+                                     "obsidian://open?vault=x", "#local-anchor", "",
+                                     "[http://spec.md/](http://spec.md/"])
+    def test_non_file_links_are_not_checked(self, raw):
+        assert split_md_target(raw) is None
+
+
+class TestClassifyMdLink:
+    def test_relative_to_the_linking_file_is_ok(self, vault):
+        add(vault, "docs/a.md")
+        src = add(vault, "03-Resources/tools/README.md")
+        assert classify_md_link(vault, src, "../../docs/a.md") == ("ok", None)
+
+    def test_a_directory_target_is_ok(self, vault):
+        (vault / "docs").mkdir()
+        src = add(vault, "README.md")
+        assert classify_md_link(vault, src, "docs/") == ("ok", None)
+
+    def test_resolving_only_from_the_root_is_root_relative(self, vault):
+        add(vault, "docs/a.md")
+        src = add(vault, "03-Resources/tools/README.md")
+        assert classify_md_link(vault, src, "docs/a.md") == ("md-root-relative", "../../docs/a.md")
+
+    def test_a_leading_slash_means_the_vault_root(self, vault):
+        add(vault, "docs/a.md")
+        src = add(vault, "x/README.md")
+        assert classify_md_link(vault, src, "/docs/a.md") == ("ok", None)
+        assert classify_md_link(vault, src, "/docs/nope.md") == ("md-broken", None)
+
+    def test_missing_everywhere_is_broken(self, vault):
+        src = add(vault, "README.md")
+        assert classify_md_link(vault, src, "nope.md") == ("md-broken", None)
+
+
+class TestScanMarkdownLinks:
+    def test_broken_markdown_link_is_reported_with_file_and_line(self, vault):
+        add(vault, "README.md", "intro\nsee [the doc](docs/missing.md)\n")
+        findings, _ = run(vault)
+        assert [(f["file"], f["line"], f["status"]) for f in findings] == \
+            [("README.md", 2, "md-broken")]
+
+    def test_resolving_markdown_link_is_not_reported(self, vault):
+        add(vault, "docs/a.md")
+        add(vault, "README.md", "[a](docs/a.md) and ![img](docs/a.md)\n")
+        assert run(vault)[0] == []
+
+    def test_external_and_anchor_links_are_ignored(self, vault):
+        add(vault, "README.md", "[x](https://example.com/nope.md) [y](#top)\n")
+        assert run(vault)[0] == []
+
+    def test_markdown_links_in_code_are_ignored(self, vault):
+        add(vault, "README.md", "`[a](nope.md)`\n```\n[b](nope.md)\n```\n")
+        assert run(vault)[0] == []
+
+    def test_wikilink_is_not_mistaken_for_a_markdown_link(self, vault):
+        add(vault, "a.md")
+        add(vault, "README.md", "[[a]](not-a-link)\n")
+        assert [f["status"] for f in run(vault)[0]] == []
+
+    def test_nested_pasted_link_is_not_a_false_positive(self, vault):
+        add(vault, "README.md", "Read @[SPEC.md]([http://spec.md/](http://spec.md/)) now\n")
+        assert run(vault)[0] == []
+
+    def test_balanced_parens_in_a_target(self, vault):
+        add(vault, "docs/Review_(employees)_x.md")
+        add(vault, "README.md", "[r](docs/Review_(employees)_x.md) and (see [s](docs/nope.md))\n")
+        assert [f["target"] for f in run(vault)[0]] == ["docs/nope.md"]
+
+    def test_no_markdown_skips_them(self, vault):
+        add(vault, "README.md", "[a](nope.md)\n")
+        assert run(vault, check_markdown=False)[0] == []
+
+    def test_wikilinks_and_markdown_links_on_one_line(self, vault):
+        add(vault, "README.md", "[[gone/x]] and [y](gone.md)\n")
+        assert sorted(f["status"] for f in run(vault)[0]) == ["md-broken", "no-remap"]
+
+
+class TestMarkdownRepair:
+    def test_dry_run_writes_nothing(self, vault):
+        add(vault, "docs/a.md")
+        note = add(vault, "x/README.md", "[a](docs/a.md)\n")
+        before = note.read_text()
+        _, written = run(vault)
+        assert written == 0 and note.read_text() == before
+
+    def test_apply_rewrites_root_relative_to_file_relative(self, vault):
+        add(vault, "docs/a.md")
+        note = add(vault, "x/README.md", "[a](docs/a.md#part \"t\")\n")
+        _, written = run(vault, apply_repairs=True)
+        assert written == 1
+        assert note.read_text() == "[a](../docs/a.md#part \"t\")\n"
+
+    def test_apply_never_touches_a_broken_link(self, vault):
+        note = add(vault, "x/README.md", "[a](nowhere.md)\n")
+        _, written = run(vault, apply_repairs=True)
+        assert written == 0 and note.read_text() == "[a](nowhere.md)\n"
+
+    def test_apply_keeps_spaces_encoded(self, vault):
+        add(vault, "my docs/a b.md")
+        note = add(vault, "x/README.md", "[a](my%20docs/a%20b.md) [b](<my docs/a b.md>)\n")
+        run(vault, apply_repairs=True)
+        assert note.read_text() == "[a](../my%20docs/a%20b.md) [b](<../my docs/a b.md>)\n"

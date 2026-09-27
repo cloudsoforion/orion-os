@@ -53,7 +53,7 @@ carry that prefix.
 **The fallback is git, not the filesystem.** `min(st_ctime, st_mtime)` was removed in 0.3.0.
 Measured on this vault, mtime dated `CLAUDE.md` to `20260729` where git says `20250924` — a
 fabricated date, ten months wrong, and indistinguishable from a real one once written. See
-[[03-Resources/tools/20260605-filesystem-timestamps-unreliable]]. Git reports when a path was
+[03-Resources/tools/20260605-filesystem-timestamps-unreliable](../20260605-filesystem-timestamps-unreliable.md). Git reports when a path was
 *added*, so a moved file carries its move date; files moved in a bulk reorg are almost always
 dated by filename or path anyway and never reach that branch.
 
@@ -106,6 +106,6 @@ files are skipped rather than misdated — the tool still runs.
 ## Related
 
 - `vault_config.py` — tag prefixes, skip-dirs, vault-root discovery
-- [[03-Resources/tools/20260605-filesystem-timestamps-unreliable]] — why the mtime fallback went
-- [[03-Resources/tools/CONTRIBUTING]] — the standard this tool is measured against
-- [[CLAUDE]] — the vault's metadata standards, which the tags implement
+- [03-Resources/tools/20260605-filesystem-timestamps-unreliable](../20260605-filesystem-timestamps-unreliable.md) — why the mtime fallback went
+- [03-Resources/tools/CONTRIBUTING](../CONTRIBUTING.md) — the standard this tool is measured against
+- [CLAUDE](../../../CLAUDE.md) — the vault's metadata standards, which the tags implement

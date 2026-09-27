@@ -70,7 +70,7 @@ python vault_indexer.py summary --output-dir /tmp/vault-summaries
 
 `summary` writes to the **ops journal** — `log_dir` in
 `vault.json`, `Log/` by default (see
-[[Log/README]]):
+[Log/README](../../../Log/README.md)):
 
 - **daily** → `<log>/<week-Monday>/<YYYYMMDD>-daily-summary.md`
   (flat in the week folder; the week folder is the Monday of that date's week, created automatically)
@@ -115,18 +115,18 @@ resolution, week-Monday math, path mapping, summary formatting) and `tests/test_
 
 Tests never touch the live vault or `vault-index.db`. Filesystem tests set mtimes
 explicitly with `os.utime` rather than depending on wall-clock — see
-[[03-Resources/tools/20260605-filesystem-timestamps-unreliable]] for why asserting on real
+[03-Resources/tools/20260605-filesystem-timestamps-unreliable](../20260605-filesystem-timestamps-unreliable.md) for why asserting on real
 vault timestamps is unsafe.
 
 ## Related
 
 - `vault_config.py` — vault-root discovery, `log_dir`, tag
   prefixes, skip-dirs, and the shared date recogniser
-- [[03-Resources/tools/process_frontmatter/README|process_frontmatter]] — reads the same date
+- [process_frontmatter](../process_frontmatter/README.md) — reads the same date
   convention to stamp `created/` tags
-- [[03-Resources/tools/second-brain/README|second-brain]] — embeds into the same
+- [second-brain](../second-brain/README.md) — embeds into the same
   `vault-index.db`
-- [[03-Resources/tools/CONTRIBUTING]] — the standard this tool is the reference implementation of
+- [03-Resources/tools/CONTRIBUTING](../CONTRIBUTING.md) — the standard this tool is the reference implementation of
 
 ## First run / new machine
 
