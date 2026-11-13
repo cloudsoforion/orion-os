@@ -94,9 +94,12 @@ the same way after any change.
 | `vault_config` (shared) | in this file | n/a | ✅ 32 | n/a (stdlib) | — |
 | [tool-scaffold](../../templates/tool-scaffold/README.md) | ✅ | ✅ (stub) | ✅ 4 | ✅ (stub) | ✅ |
 
-**284 tests across 7 suites, all passing** (98 before the 2026-08-08 convergence). Every tool
+**400 tests across 8 suites, all passing** (98 before the 2026-08-08 convergence). Every tool
 is fully compliant, and no tool declares its own folder names, tag prefixes, `author`, or
 skip-dirs.
+
+Run the suites per tool (`cd 03-Resources/tools/<tool> && python3 -m pytest tests/`). A root-level
+`pytest` run fails at collection because every suite is a package named `tests`.
 
 Track per-tool compliance in a **dated audit note** rather than by editing this table's history —
 re-run it as a new dated doc so the trend stays visible. See [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md)
