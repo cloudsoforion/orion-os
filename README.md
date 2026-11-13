@@ -46,7 +46,7 @@ self-enforcing.
 
 ### The tools
 
-Six tools, one shared config module, **396 passing tests**, stdlib-only except where noted. Full
+Six tools, one shared config module, **400 passing tests**, stdlib-only except where noted. Full
 index: [03-Resources/tools/README](03-Resources/tools/README.md).
 
 | Tool | What it does |

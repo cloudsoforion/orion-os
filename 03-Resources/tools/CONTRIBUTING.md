@@ -44,7 +44,7 @@ anyone but you.
 | `03-Resources/tools/` | You, operating on or reporting into the vault | This standard, in full |
 | Your team's shared tooling repo | **Team-audience** ops tooling | Promote only after the tool has been run for real a few times — see below |
 | The owning system's repo (e.g. its `hack/` or `scripts/` dir) | Ops tooling with an obvious upstream home | Prefer this over a new shared location when one exists |
-| A personal portable-tools repo (the author's is [quiver](https://github.com/ldalorion/quiver)) | Portable tooling with no employer specifics | Give it a verification gate that rejects employer identifiers, so work-specific tooling can never land there |
+| A personal portable-tools repo | Portable tooling with no employer specifics | Give it a verification gate that rejects employer identifiers, so work-specific tooling can never land there |
 
 ### Promotion to team-audience
 
