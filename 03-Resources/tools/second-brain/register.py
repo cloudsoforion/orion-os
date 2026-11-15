@@ -40,11 +40,12 @@ TOOL_DIR = Path(__file__).resolve().parent
 
 
 def find_vault_root(start: Path) -> Path | None:
-    """Nearest ancestor containing `.obsidian/`. Duplicated deliberately: this
-    script must work when run from a bare checkout before anything else is set up."""
+    """Nearest ancestor containing a `vault.json` file. Duplicated deliberately:
+    this script must work when run from a bare checkout before anything else is
+    set up. Keep it in step with `vault_config.find_vault_root`."""
     start = Path(start).resolve()
     for candidate in [start, *start.parents]:
-        if (candidate / ".obsidian").is_dir():
+        if (candidate / "vault.json").is_file():
             return candidate
     return None
 
@@ -127,7 +128,7 @@ def main() -> int:
         description="Register second-brain's hook and MCP server with resolved paths. "
                     "Previews by default; pass --apply to write.")
     parser.add_argument("--vault", type=Path, default=None,
-                        help="Vault root (default: found by walking up for .obsidian/)")
+                        help="Vault root (default: found by walking up for vault.json)")
     parser.add_argument("--python", default="python3",
                         help="Interpreter to invoke in the generated commands (default: python3)")
     parser.add_argument("--name", default=DEFAULT_SERVER_NAME,
@@ -146,7 +147,7 @@ def main() -> int:
 
     vault = args.vault.resolve() if args.vault else find_vault_root(TOOL_DIR)
     if vault is None:
-        print("error: could not locate the vault root (.obsidian); pass --vault", file=sys.stderr)
+        print("error: could not locate the vault root (no vault.json above here); pass --vault", file=sys.stderr)
         return 1
 
     hook_path = TOOL_DIR / "hook.py"

@@ -49,7 +49,8 @@ The point is that **every command must fail gracefully**, not that anything is f
 
 ```bash
 EMPTY=/tmp/orion-empty
-rm -rf "$EMPTY" && mkdir -p "$EMPTY/03-Resources/tools" "$EMPTY/.obsidian"
+rm -rf "$EMPTY" && mkdir -p "$EMPTY/03-Resources/tools"
+echo '{}' > "$EMPTY/vault.json"   # the root marker; without it the tools refuse to guess
 
 # Copy in just the tooling — this is what an adopter has before writing any notes
 cp -R /path/to/orion-os/03-Resources/tools/second-brain  "$EMPTY/03-Resources/tools/"

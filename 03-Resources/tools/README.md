@@ -25,7 +25,7 @@ Vault tooling. One directory per tool. The standard every tool here is measured 
 
 | File | What it does |
 | --- | --- |
-| `vault_config.py` | The one place that knows the vault's shape: vault-root discovery, pillar folder names, `log_dir`, tag prefixes, `author`, skip-dirs, and the `YYYYMMDD`/`YYYYMMDDHHMM` date recogniser. Reads `vault.json` at the vault root. **Not a tool** — no tool re-declares any of it. |
+| `vault_config.py` | The one place that knows the vault's shape: vault-root discovery, pillar folder names, `log_dir`, tag prefixes, `author`, skip-dirs, and the `YYYYMMDD`/`YYYYMMDDHHMM` date recogniser. Reads `vault.json` at the vault root, and that file's presence is what marks a directory as the root: no `vault.json`, no vault. **Not a tool** — no tool re-declares any of it. |
 
 Run `python3 03-Resources/tools/vault_config.py` to see exactly what a tool would resolve.
 The rule and its rationale are in [03-Resources/tools/CONTRIBUTING](CONTRIBUTING.md) § The shared config module.
@@ -86,12 +86,12 @@ the same way after any change.
 | Tool | README | CHANGELOG | Tests | requirements | Config from `vault_config` |
 | --- | --- | --- | --- | --- | --- |
 | vault-indexer | ✅ | ✅ | ✅ 52 | n/a (stdlib) | ✅ |
-| second-brain | ✅ | ✅ | ✅ 56 | ✅ | n/a (own `common.py`) |
+| second-brain | ✅ | ✅ | ✅ 124 | ✅ | n/a (own `common.py`) |
 | process_frontmatter | ✅ | ✅ | ✅ 51 | ✅ | ✅ |
 | stamp-out | ✅ | ✅ | ✅ 27 | n/a | ✅ |
 | scan-broken-wikilinks | ✅ | ✅ | ✅ 90 | n/a (stdlib) | ✅ |
 | outbound-path-guard | ✅ | ✅ | ✅ 27 | n/a (stdlib) | ✅ |
-| `vault_config` (shared) | in this file | n/a | ✅ 32 | n/a (stdlib) | — |
+| `vault_config` (shared) | in this file | n/a | ✅ 35 | n/a (stdlib) | — |
 | [tool-scaffold](../../templates/tool-scaffold/README.md) | ✅ | ✅ (stub) | ✅ 4 | ✅ (stub) | ✅ |
 
 **400 tests across 8 suites, all passing** (98 before the 2026-08-08 convergence). Every tool

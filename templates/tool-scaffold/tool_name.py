@@ -34,7 +34,7 @@ def _tools_dir() -> Path:
     that owns walking the tree is importable. Two cases, in order:
 
       1. Already copied into a tool directory: `parent.parent` is the tools dir.
-      2. Still sitting in templates/tool-scaffold/: walk up for `.obsidian/` and
+      2. Still sitting in templates/tool-scaffold/: walk up for `vault.json` and
          take the tools dir from the vault root, so the scaffold's own suite runs
          in place instead of failing on the import.
 
@@ -47,7 +47,7 @@ def _tools_dir() -> Path:
     if (sibling / "vault_config.py").is_file():
         return sibling
     for candidate in here.parents:
-        if (candidate / ".obsidian").is_dir():
+        if (candidate / "vault.json").is_file():
             return candidate / "03-Resources" / "tools"
     return sibling
 
@@ -117,7 +117,7 @@ def run(root: Path, folders: list[str] | None, apply: bool) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--vault", type=Path, default=VAULT_ROOT,
-                        help="vault root (default: found by walking up for .obsidian/)")
+                        help="vault root (default: found by walking up for vault.json)")
     parser.add_argument("--folders", nargs="*", default=None,
                         help="restrict to these top-level folder prefixes")
     mode = parser.add_mutually_exclusive_group()

@@ -63,7 +63,7 @@ python vault_indexer.py summary --output-dir /tmp/vault-summaries
 | `--date YYYY-MM-DD` | `summary` | single-day summary via **mtime** (default: today) |
 | `--from` / `--to YYYY-MM-DD` | `summary` | date-range summary via **path date** (not mtime) |
 | `--output-dir PATH` | `summary` | where summaries are written (default: `log_dir` from `vault.json`). Relative paths resolve against the vault root |
-| `--vault PATH` | both | vault root (auto-detected from `.obsidian` if omitted) |
+| `--vault PATH` | both | vault root (auto-detected from `vault.json` if omitted) |
 | `--db PATH` | both | database path (default: `<script-dir>/vault-index.db`) |
 
 ## Output

@@ -86,7 +86,7 @@ python3 scan_broken_wikilinks.py --quiet
 
 | Flag | Meaning |
 |---|---|
-| `--vault PATH` | Vault root. Default: found by walking up for `.obsidian/`. |
+| `--vault PATH` | Vault root. Default: found by walking up for `vault.json`. |
 | `--remap OLD/=NEW/` | Prefix rewrite, repeatable. Adds to `link_remaps` in `vault.json`. |
 | `--exclude GLOB` | Skip files matching a vault-relative glob, repeatable. Adds to `exclude_paths`. |
 | `--apply` | Rewrite `fixable` path links, and `md-root-relative` links to the correct file-relative path. Nothing else. |

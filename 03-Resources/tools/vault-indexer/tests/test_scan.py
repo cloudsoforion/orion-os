@@ -23,7 +23,7 @@ def _set_mtime(p: Path, d: date):
 @pytest.fixture
 def tmp_vault(tmp_path):
     """A minimal vault with a few markdown files."""
-    (tmp_path / ".obsidian").mkdir()
+    (tmp_path / "vault.json").write_text("{}", encoding="utf-8")
     (tmp_path / "notes").mkdir()
     (tmp_path / "notes" / "file-a.md").write_text("# Note A\n## Section One\n")
     (tmp_path / "notes" / "file-b.md").write_text("# Note B\n")

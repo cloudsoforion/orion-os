@@ -28,6 +28,10 @@ cp -r <orion-os>/03-Resources/tools  <your-vault>/03-Resources/tools
 cp    <orion-os>/vault.json          <your-vault>/vault.json
 ```
 
+That file is also how the tools find your vault: the nearest directory above the working directory
+that holds a `vault.json` is the root. There is no other marker, so this copy is not optional even if
+you change nothing in it.
+
 Then edit `vault.json` so the pillar names, `log_dir`, and `changelog_dir` match **what you already
 have**:
 

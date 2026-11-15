@@ -23,7 +23,8 @@ templates/    note templates, including a compliant tool scaffold
 1. **Use this template** (or clone it), then open the directory as a vault in Obsidian.
 2. Install the community plugins the templates need: **Dataview**, **Tasks**, **Calendar**.
 3. Edit `vault.json` — set `author`, and rename any pillar you want called something else. The
-   tooling reads that file; nothing hardcodes folder names.
+   tooling reads that file; nothing hardcodes folder names. Its presence is also what marks the
+   directory as a vault root, so keep it there even if you change nothing.
 4. Read [OrionOs](OrionOs.md). It's the source of truth for the model, the `status:` vocabulary, and the one
    rule that matters most: **move notes in Obsidian, never with `mv`**.
 5. Create your first Area: `cp templates/area-README.md 01-Areas/<Area-Name>/README.md`.
@@ -46,7 +47,7 @@ self-enforcing.
 
 ### The tools
 
-Six tools, one shared config module, **400 passing tests**, stdlib-only except where noted. Full
+Six tools, one shared config module, **410 passing tests**, stdlib-only except where noted. Full
 index: [03-Resources/tools/README](03-Resources/tools/README.md).
 
 | Tool | What it does |

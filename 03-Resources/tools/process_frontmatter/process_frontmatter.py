@@ -10,7 +10,7 @@ YAML frontmatter. Tag prefixes and skip-dirs come from `vault_config`.
 vault, so nothing is written unless you pass `--apply`.
 
 Usage:
-  # Preview across the whole vault (auto-detected from .obsidian/)
+  # Preview across the whole vault (auto-detected from vault.json)
   python3 process_frontmatter.py
 
   # Preview one subtree
@@ -287,7 +287,7 @@ def main():
                     'Previews by default; pass --apply to write.'
     )
     parser.add_argument('--directory', type=Path, default=None,
-                        help='Directory to process (default: the vault root, found via .obsidian/)')
+                        help='Directory to process (default: the vault root, found via vault.json)')
     parser.add_argument('--apply', action='store_true',
                         help='Actually write the changes. Without this, nothing is written.')
     parser.add_argument('--dry-run', action='store_true',

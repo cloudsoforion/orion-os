@@ -60,7 +60,7 @@ dated by filename or path anyway and never reach that branch.
 ## Commands
 
 ```bash
-# Preview across the whole vault. The vault root is found by walking up for .obsidian/
+# Preview across the whole vault. The vault root is found by walking up for vault.json
 python3 process_frontmatter.py
 
 # Preview one subtree
@@ -74,7 +74,7 @@ python3 process_frontmatter.py --apply
 
 | Flag | Meaning |
 |---|---|
-| `--directory PATH` | Directory to process. Default: the vault root, found via `.obsidian/`. |
+| `--directory PATH` | Directory to process. Default: the vault root, found via `vault.json`. |
 | `--apply` | Write the changes. Without it, nothing is written. |
 | `--dry-run` | Explicitly preview only. Already the default; wins if combined with `--apply`. |
 

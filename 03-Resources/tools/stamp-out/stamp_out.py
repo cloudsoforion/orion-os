@@ -460,7 +460,7 @@ def main(argv: list[str] | None = None) -> int:
                     help=f"Timestamp for the copy name (default: now, "
                          f"{TIMESTAMP_FMT.replace('%', '%%')}).")
     ap.add_argument("--dest-parent", type=Path, help="Where to place the copy (default: source's parent).")
-    ap.add_argument("--vault", type=Path, help="Vault root (default: auto-detect via .obsidian).")
+    ap.add_argument("--vault", type=Path, help="Vault root (default: auto-detect via vault.json).")
     ap.add_argument("--dry-run", action="store_true", help="Report what would change; write nothing.")
     ap.add_argument("--no-rewrite-paths", action="store_true",
                     help="Skip repointing filesystem path references (shell vars, apply paths).")
@@ -475,7 +475,7 @@ def main(argv: list[str] | None = None) -> int:
 
     vault = (args.vault.resolve() if args.vault else find_vault_root(folder))
     if vault is None:
-        print("error: could not locate vault root (.obsidian); pass --vault", file=sys.stderr)
+        print("error: could not locate vault root (no vault.json above here); pass --vault", file=sys.stderr)
         return 1
 
     config = vault_config.load_config(vault)

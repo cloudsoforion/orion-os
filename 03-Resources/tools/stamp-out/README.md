@@ -92,7 +92,7 @@ python $TOOL 202607290947-runbook-folder --rewrite-existing --source runbook-fol
 | `--no-rewrite-paths` | Skip the filesystem-path pass (links only). |
 | `--no-report` | Don't write the report note. |
 | `--author NAME` | `author:` value for the report note. Default: `author` from `vault.json`. |
-| `--vault PATH` | Vault root. Default: auto-detected via `.obsidian`. |
+| `--vault PATH` | Vault root. Default: auto-detected via `vault.json`. |
 
 **`--dry-run` is opt-in here, unlike `process_frontmatter`.** The blast radius is a *new copy*,
 not the original — a bad run leaves a wrong folder beside a correct one rather than rewriting

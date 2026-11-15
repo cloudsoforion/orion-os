@@ -22,16 +22,30 @@ Usage:
   python3 embed_chunks.py --limit 200           # small real run, for a smoke test
   python3 embed_chunks.py                       # full rebuild (minutes; scales with vault size)
   python3 embed_chunks.py --stats               # what is in the chunk store now
-  python3 embed_chunks.py --db /path/to/other/vault-index.db
+  python3 embed_chunks.py --db /path/to/other/vault-index.db --vault /path/to/other/vault
+
+Where the vault root comes from, in order: `--vault`, then `SECOND_BRAIN_VAULT`, then the
+nearest `vault.json` above this script. The `files` table stores paths relative to the
+root the indexer was run against, so the root given here must be that same one; if none
+of the indexed paths exist under it, the run stops rather than embedding nothing.
+
+Until 2026-11-15 the root was inferred from the DB's location, four directories up, which
+was right only when the DB sat at `<vault>/03-Resources/tools/vault-indexer/` and silently
+wrong everywhere else — the same mistake the tool-scaffold's `_tools_dir` docstring warns
+about. Indexing a second vault from this checkout (`--db` elsewhere) made every file
+"unreadable" and produced an empty chunk store.
 """
 
 import argparse
+import os
 import sqlite3
 import sys
 import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import vault_config  # noqa: E402
 from chunker import DEFAULT_MAX_CHUNKS, DEFAULT_TARGET_CHARS, chunk_markdown  # noqa: E402
 from common import (  # noqa: E402
     EMBED_MODEL,
@@ -44,9 +58,24 @@ from common import (  # noqa: E402
 PROGRESS_EVERY = 2000
 
 
-def vault_root_for(db_path: Path) -> Path:
-    """The vault the index describes: <vault>/03-Resources/tools/vault-indexer/db."""
-    return db_path.resolve().parent.parent.parent.parent
+VAULT_ENV = "SECOND_BRAIN_VAULT"
+
+
+def resolve_vault_root(explicit: "Path | None", start: Path,
+                       env: "dict | None" = None) -> "Path | None":
+    """The vault the index describes: `--vault`, else `SECOND_BRAIN_VAULT`, else discovery.
+
+    Discovery is `vault_config.find_vault_root(start)`: the nearest directory at or
+    above `start` holding a `vault.json`. Returns None rather than guessing, so the
+    caller can stop with a message that says what to pass.
+    """
+    if explicit is not None:
+        return Path(explicit).expanduser().resolve()
+    env = os.environ if env is None else env
+    from_env = env.get(VAULT_ENV)
+    if from_env:
+        return Path(from_env).expanduser().resolve()
+    return vault_config.find_vault_root(start)
 
 
 def plan_chunks(conn: sqlite3.Connection, vault_root: Path, target: int,
@@ -106,6 +135,9 @@ def main() -> None:
         description="Build the chunked body-text index (chunks table + vector matrix)")
     parser.add_argument("--db", type=Path, default=None,
                         help="Index path (default: ../vault-indexer/vault-index.db)")
+    parser.add_argument("--vault", type=Path, default=None,
+                        help=f"Vault root the index was built against (default: ${VAULT_ENV}, "
+                             "else the nearest vault.json above this script)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Chunk and report only — no embedding, no writes")
     parser.add_argument("--stats", action="store_true", help="Show chunk-store coverage and exit")
@@ -129,7 +161,12 @@ def main() -> None:
         conn.close()
         return
 
-    vault_root = vault_root_for(db_path)
+    vault_root = resolve_vault_root(args.vault, Path(__file__).resolve().parent)
+    if vault_root is None:
+        print(f"error: could not locate the vault root (no vault.json above here); "
+              f"pass --vault or set {VAULT_ENV}", file=sys.stderr)
+        conn.close()
+        sys.exit(1)
     print(f"Vault root : {vault_root}", file=sys.stderr)
     print(f"Index      : {db_path}", file=sys.stderr)
 
@@ -137,6 +174,12 @@ def main() -> None:
     records, ok, bad = plan_chunks(conn, vault_root, args.target, args.max_chunks, args.limit)
     print(f"Chunked {ok:,} files ({bad} unreadable) -> {len(records):,} chunks "
           f"in {time.time() - t0:.1f}s", file=sys.stderr)
+    if bad and not ok:
+        print(f"error: none of the {bad} indexed paths exist under {vault_root}. "
+              f"The index was built against a different root; pass --vault or set {VAULT_ENV}.",
+              file=sys.stderr)
+        conn.close()
+        sys.exit(1)
 
     if args.dry_run:
         est = len(records) * 0.028
