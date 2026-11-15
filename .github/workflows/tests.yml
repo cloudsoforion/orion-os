@@ -1,0 +1,74 @@
+# Runs every tool's test suite on each push to main and on every pull request.
+#
+# The suites run per tool, from the tool's own directory (`python3 -m pytest tests/`),
+# because every tool has a `tests` package and a root-level run collides on the name.
+# See 03-Resources/tools/CONTRIBUTING.md § Tests. The loop keeps going after a failure
+# so one red suite does not hide another, then fails the job at the end.
+#
+# No network, no Ollama: the suites are written to pass on a plane. The only installs
+# are the two tools' requirements files (PyYAML for process_frontmatter; numpy and mcp
+# for second-brain).
+
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            03-Resources/tools/process_frontmatter/requirements.txt
+            03-Resources/tools/second-brain/requirements.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest \
+            -r 03-Resources/tools/process_frontmatter/requirements.txt \
+            -r 03-Resources/tools/second-brain/requirements.txt
+
+      - name: Run every suite, one tool at a time
+        run: |
+          set -u
+          failed=()
+          for dir in \
+            03-Resources/tools \
+            03-Resources/tools/vault-indexer \
+            03-Resources/tools/process_frontmatter \
+            03-Resources/tools/scan-broken-wikilinks \
+            03-Resources/tools/stamp-out \
+            03-Resources/tools/outbound-path-guard \
+            03-Resources/tools/second-brain \
+            templates/tool-scaffold
+          do
+            echo "::group::$dir"
+            if (cd "$dir" && python -m pytest tests/ -q); then
+              echo "PASS  $dir"
+            else
+              echo "FAIL  $dir"
+              failed+=("$dir")
+            fi
+            echo "::endgroup::"
+          done
+          if [ "${#failed[@]}" -gt 0 ]; then
+            printf 'Failed suites:\n'; printf '  %s\n' "${failed[@]}"
+            exit 1
+          fi
