@@ -33,13 +33,23 @@ Usage:
   python3 vault_config.py --vault ~/notes/some-other-vault
 
 Resolution rules:
-  find_vault_root  walks up from `start` for the first directory containing
-                   `.obsidian/`. Returns None if there is none — callers that
-                   need a value supply their own fallback, so this function
-                   never guesses.
+  find_vault_root  walks up from `start` for the first directory containing a
+                   `vault.json` file. Returns None if there is none — callers
+                   that need a value supply their own fallback, so this
+                   function never guesses.
   load_config      merges `<vault-root>/vault.json` over DEFAULTS, one level
-                   deep. A missing or unreadable file is not an error: the
-                   defaults describe a stock vault, so a bare clone works.
+                   deep. A root found by discovery always has the file. The
+                   DEFAULTS fallback remains for an explicit `--vault` path
+                   that has none, so pointing a tool at a bare folder works.
+
+Why `vault.json` is the root marker, and not `.obsidian/` (changed 2026-11-15):
+  The marker used to be `.obsidian/`, which named one editor and was gitignored
+  in every published vault, so a fresh clone had no root until someone opened
+  it in Obsidian. The tools never read anything inside that directory; it was
+  a marker and nothing more. `vault.json` is the file that describes the vault
+  and already has to sit at its root, so the marker and the config are now the
+  same file. Every other ecosystem works this way: `.git`, `pyproject.toml`,
+  `package.json`. An empty `{}` is a valid marker.
 """
 
 import argparse
@@ -99,15 +109,18 @@ DEFAULTS = {
 
 
 def find_vault_root(start: Path) -> Path | None:
-    """First directory at or above `start` that contains `.obsidian/`.
+    """First directory at or above `start` that contains a `vault.json` file.
 
     Returns None rather than guessing — a tool that needs a definite path
     writes `find_vault_root(x) or x.resolve()` so the fallback is visible at
     the call site instead of hidden in here.
+
+    Only the file counts. A directory named `vault.json` is not a marker, and
+    neither is `.obsidian/` any more (see the module docstring for why).
     """
     start = Path(start).resolve()
     for candidate in [start, *start.parents]:
-        if (candidate / ".obsidian").is_dir():
+        if (candidate / CONFIG_NAME).is_file():
             return candidate
     return None
 
@@ -130,9 +143,10 @@ def _merge(base: dict, override: dict) -> dict:
 def load_config(vault_root: Path | None = None, config_path: Path | None = None) -> dict:
     """DEFAULTS with `<vault_root>/vault.json` merged over the top.
 
-    An absent file returns DEFAULTS unchanged. A malformed one raises — a
-    typo in the taxonomy should stop the run, not silently fall back to a
-    different taxonomy than the one the author wrote down.
+    An absent file returns DEFAULTS unchanged — that only happens for an
+    explicit `--vault` path, since discovery requires the file. A malformed
+    one raises — a typo in the taxonomy should stop the run, not silently fall
+    back to a different taxonomy than the one the author wrote down.
     """
     if config_path is None:
         if vault_root is None:
@@ -205,7 +219,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Print the vault root and merged config a tool would resolve."
     )
-    parser.add_argument("--vault", type=Path, help="Vault root (auto-detected from .obsidian if omitted)")
+    parser.add_argument("--vault", type=Path, help="Vault root (auto-detected from vault.json if omitted)")
     parser.add_argument("--start", type=Path, default=Path.cwd(),
                         help="Where to start the upward search (default: cwd)")
     args = parser.parse_args()
@@ -213,7 +227,7 @@ def main():
     root = args.vault or find_vault_root(args.start)
     if root is None:
         print(f"No vault found at or above {args.start.resolve()} "
-              f"(looking for a directory containing .obsidian/)", file=sys.stderr)
+              f"(looking for a directory containing {CONFIG_NAME})", file=sys.stderr)
         return 1
 
     config_path = root / CONFIG_NAME

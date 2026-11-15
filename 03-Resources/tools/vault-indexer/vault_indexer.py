@@ -395,7 +395,7 @@ def main():
         description="Vault file indexer and work summarizer"
     )
     parser.add_argument("command", choices=["index", "summary"])
-    parser.add_argument("--vault", type=Path, help="Vault root (auto-detected from .obsidian if omitted)")
+    parser.add_argument("--vault", type=Path, help="Vault root (auto-detected from vault.json if omitted)")
     parser.add_argument("--db", type=Path, help=f"Database path (default: <script-dir>/{DB_NAME})")
     parser.add_argument(
         "--folders", nargs="+", metavar="FOLDER",

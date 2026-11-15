@@ -54,9 +54,10 @@ CONFIG = vault_config.DEFAULTS
 
 @pytest.fixture
 def vault(tmp_path):
-    """Throwaway vault root, marked with `.obsidian/` so discovery finds it."""
+    """Throwaway vault root, marked with a `vault.json` so discovery finds it."""
     root = tmp_path / "vault"
-    (root / ".obsidian").mkdir(parents=True)
+    root.mkdir(parents=True)
+    (root / "vault.json").write_text("{}", encoding="utf-8")
     return root
 
 

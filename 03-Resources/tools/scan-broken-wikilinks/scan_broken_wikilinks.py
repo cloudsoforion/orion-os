@@ -494,7 +494,7 @@ def main() -> int:
         description="Find wikilinks that don't resolve, bare basenames that resolve by luck, "
                     "and relative markdown links that don't resolve. Previews by default.")
     parser.add_argument("--vault", type=Path, default=None,
-                        help="Vault root (default: found by walking up for .obsidian/)")
+                        help="Vault root (default: found by walking up for vault.json)")
     parser.add_argument("--remap", action="append", default=[], metavar="OLD/=NEW/",
                         help="Prefix remap, repeatable. Adds to `link_remaps` in vault.json.")
     parser.add_argument("--apply", action="store_true",
@@ -518,7 +518,7 @@ def main() -> int:
     vault = (args.vault.resolve() if args.vault
              else vault_config.find_vault_root(Path.cwd()))
     if vault is None:
-        print("error: could not locate the vault root (.obsidian); pass --vault", file=sys.stderr)
+        print("error: could not locate the vault root (no vault.json above here); pass --vault", file=sys.stderr)
         return 1
 
     config = vault_config.load_config(vault)

@@ -3,8 +3,11 @@
 The contract these tests pin:
 
   find_vault_root(start)
-    - returns the nearest ancestor (including `start`) containing `.obsidian/`
-    - `.obsidian` must be a directory; a file by that name is not a vault marker
+    - returns the nearest ancestor (including `start`) containing a `vault.json`
+      file
+    - `vault.json` must be a file; a directory by that name is not a vault marker
+    - `.obsidian/` is not a marker (it was until 2026-11-15; see the module
+      docstring in vault_config for why it stopped being one)
     - returns None when there is none, so callers own their fallback
 
   load_config(vault_root)
@@ -45,10 +48,9 @@ from vault_config import (  # noqa: E402
 
 
 def make_vault(root: Path, config: dict | None = None) -> Path:
-    """Throwaway vault: `.obsidian/` plus an optional vault.json."""
-    (root / ".obsidian").mkdir(parents=True)
-    if config is not None:
-        (root / "vault.json").write_text(json.dumps(config), encoding="utf-8")
+    """Throwaway vault: a `vault.json` at the root, `{}` unless given a config."""
+    root.mkdir(parents=True)
+    (root / "vault.json").write_text(json.dumps(config or {}), encoding="utf-8")
     return root
 
 
@@ -68,11 +70,21 @@ class TestFindVaultRoot:
         plain.mkdir()
         assert find_vault_root(plain) is None
 
-    def test_obsidian_as_a_file_is_not_a_vault_marker(self, tmp_path):
+    def test_vault_json_as_a_directory_is_not_a_vault_marker(self, tmp_path):
         decoy = tmp_path / "decoy"
-        decoy.mkdir()
-        (decoy / ".obsidian").write_text("not a directory", encoding="utf-8")
+        (decoy / "vault.json").mkdir(parents=True)
         assert find_vault_root(decoy) is None
+
+    def test_obsidian_dir_alone_is_not_a_vault_marker(self, tmp_path):
+        """The pre-2026-11-15 marker. An Obsidian vault with no vault.json is
+        not something the tools can describe, so they must not claim to find it."""
+        legacy = tmp_path / "legacy"
+        (legacy / ".obsidian").mkdir(parents=True)
+        assert find_vault_root(legacy) is None
+
+    def test_an_empty_object_is_a_valid_marker(self, tmp_path):
+        vault = make_vault(tmp_path / "vault", {})
+        assert find_vault_root(vault) == vault.resolve()
 
     def test_picks_the_nearest_marker_when_vaults_nest(self, tmp_path):
         outer = make_vault(tmp_path / "outer")
@@ -82,6 +94,13 @@ class TestFindVaultRoot:
 
 class TestLoadConfig:
     def test_no_config_file_yields_defaults(self, tmp_path):
+        """An explicit --vault path with no vault.json: discovery would not have
+        found it, but a caller that names the root still gets the stock shape."""
+        bare = tmp_path / "bare"
+        bare.mkdir()
+        assert load_config(bare) == DEFAULTS
+
+    def test_empty_config_file_yields_defaults(self, tmp_path):
         vault = make_vault(tmp_path / "vault")
         assert load_config(vault) == DEFAULTS
 

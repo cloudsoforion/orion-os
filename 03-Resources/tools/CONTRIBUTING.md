@@ -268,7 +268,7 @@ Conventions, taken from the three existing suites:
   specification document.
 - **Group with plain classes**, one behaviour per class: `class TestWeekMonday:` with
   `test_monday_maps_to_itself`, `test_crosses_month_boundary`. No `unittest.TestCase`.
-- **Filesystem tests use `tmp_path`** and build a throwaway vault (`.obsidian/` + a
+- **Filesystem tests use `tmp_path`** and build a throwaway vault (a `vault.json`, `{}` is enough, + a
   handful of `.md` files); set mtimes explicitly with `os.utime` rather than depending on
   wall-clock. Note that [03-Resources/tools/20260605-filesystem-timestamps-unreliable](20260605-filesystem-timestamps-unreliable.md) applies — never
   assert on real vault timestamps.

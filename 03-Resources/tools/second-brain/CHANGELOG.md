@@ -13,6 +13,27 @@ status: active
 
 # Changelog
 
+## [0.5.0] — 2026-11-15
+
+### Added
+- **`embed_chunks.py --vault`, and `SECOND_BRAIN_VAULT`.** The vault root used to be inferred from
+  the DB's location, four directories up, which was right only when the DB sat at
+  `<vault>/03-Resources/tools/vault-indexer/` and silently wrong everywhere else: pointing `--db` at
+  a second vault's index made every file "unreadable" and wrote an empty chunk store. Resolution is
+  now `--vault`, else `SECOND_BRAIN_VAULT`, else the nearest `vault.json` above the script via the
+  shared `vault_config.find_vault_root`. No root found is an error that says what to pass.
+- **A wrong root is an error, not a quiet zero.** If none of the indexed paths exist under the
+  resolved root, the run stops before embedding and names the root it tried.
+- Tests: `tests/test_embed_chunks.py` (7) — `resolve_vault_root` precedence and the no-guess rule,
+  `plan_chunks` relative-path reads and the all-unreadable signal. Suite 117 → 124.
+
+### Changed
+- **`register.py` finds the vault by `vault.json`, not `.obsidian/`.** Its deliberately duplicated
+  `find_vault_root` now matches the shared `vault_config.find_vault_root`, which changed the same day
+  (see `CHANGELOG/20261115-vault-json-is-the-root-marker`). A bare checkout with no `vault.json` now
+  stops with "no vault.json above here; pass --vault" instead of registering against a guessed root.
+  No tests added: `register.py` has no suite; the shared module's suite covers the marker rule.
+
 ## [0.4.0] — 2026-09-11
 
 Body text is now embedded. Before this release the index was built from

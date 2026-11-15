@@ -24,7 +24,7 @@ Two operational folders sit outside the PARA pillars:
 - `CHANGELOG/` — the record of shipped changes to the vault itself. See [CHANGELOG/README](CHANGELOG/README.md).
 - `templates/` — note templates. See [templates/README](templates/README.md).
 
-**Folder names are configuration, not constants.** They live in `vault.json`; no tool hardcodes them.
+**Folder names are configuration, not constants.** They live in `vault.json`; no tool hardcodes them. The same file is the root marker: the tools find the vault by walking up to the nearest `vault.json`, not by `.obsidian/`.
 
 ## Key Tools and Scripts
 

@@ -188,6 +188,7 @@ different embedding model needs no code edit:
 | `SECOND_BRAIN_OLLAMA_URL` | `http://localhost:11434/api/embeddings` |
 | `SECOND_BRAIN_EMBED_MODEL` | `nomic-embed-text` |
 | `SECOND_BRAIN_DB` | `../vault-indexer/vault-index.db` |
+| `SECOND_BRAIN_VAULT` | the nearest `vault.json` above `embed_chunks.py` (only `embed_chunks.py` reads this; `--vault` overrides it) |
 
 ⚠️ Changing `SECOND_BRAIN_EMBED_MODEL` invalidates every stored vector — different models
 produce different vector spaces, and mixed vectors still compare, just meaninglessly. Run
@@ -239,6 +240,16 @@ for a mid-sized vault; the matrix is ~3 KB per chunk.
 python3 embed_chunks.py --dry-run    # chunk counts per pillar; embeds nothing, writes nothing
 python3 embed_chunks.py              # full rebuild
 python3 embed_chunks.py --stats      # chunks stored, files covered, matrix shape
+```
+
+Indexing a **second vault** from this checkout: give both tools the same root, and the
+embedder a DB of its own. The `files` table holds paths relative to the root the indexer
+used, so the embedder must be told that root; if none of the indexed paths exist under
+it, the run stops with an error instead of writing an empty chunk store.
+
+```bash
+python3 ../vault-indexer/vault_indexer.py index --vault ~/other-vault --db ~/other-vault/.index/vault-index.db
+python3 embed_chunks.py --db ~/other-vault/.index/vault-index.db --vault ~/other-vault --dry-run
 ```
 
 ⚠️ **The index is only as fresh as its last build, and there is no incremental mode yet.**
