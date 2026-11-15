@@ -98,7 +98,7 @@ the same way after any change.
 is fully compliant, and no tool declares its own folder names, tag prefixes, `author`, or
 skip-dirs.
 
-Run the suites per tool (`cd 03-Resources/tools/<tool> && python3 -m pytest tests/`). A root-level
+Run the suites per tool (`cd 03-Resources/tools/<tool> && python3 -m pytest tests/`). CI does the same on every push to `main` and every pull request, on Python 3.10 and 3.12 (`.github/workflows/tests.yml`). A root-level
 `pytest` run fails at collection because every suite is a package named `tests`.
 
 Track per-tool compliance in a **dated audit note** rather than by editing this table's history —

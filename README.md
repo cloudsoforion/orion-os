@@ -1,5 +1,7 @@
 # OrionOs
 
+[![tests](https://github.com/cloudsoforion/orion-os/actions/workflows/tests.yml/badge.svg)](https://github.com/cloudsoforion/orion-os/actions/workflows/tests.yml)
+
 A working operating system for a knowledge repository, as an Obsidian vault you can clone and start
 using. **PARA + GTD + Routines**, plus the tooling that keeps it honest.
 

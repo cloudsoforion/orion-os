@@ -254,7 +254,8 @@ Non-negotiable for anything that writes to the vault.
 
 Conventions, taken from the three existing suites:
 
-- **`pytest`**, run from the tool directory: `python3 -m pytest tests/`.
+- **`pytest`**, run from the tool directory: `python3 -m pytest tests/`. CI runs the same
+  loop over every tool (`.github/workflows/tests.yml`); a new tool is added to that list.
 - **`tests/__init__.py`** (empty) plus, in each test module:
   ```python
   import sys
